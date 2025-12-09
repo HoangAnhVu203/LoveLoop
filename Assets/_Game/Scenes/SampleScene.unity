@@ -1494,10 +1494,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hearts:
   - {fileID: 1261211277}
-  center: {fileID: 604603661}
-  angleStep: 15
-  normalFollowPosLerp: 10
-  normalFollowRotLerp: 10
+  pointsPerHeart: 18
+  recordInterval: 0.01
+  normalFollowPosLerp: 15
+  normalFollowRotLerp: 15
   boostFollowPosLerp: 40
   boostFollowRotLerp: 40
 --- !u!1 &954052062

@@ -7,53 +7,107 @@ public class HeartChainManager : MonoBehaviour
     [Header("Danh sách Heart (0 = leader)")]
     public List<Transform> hearts = new List<Transform>();
 
-    [Header("Tâm quỹ đạo (trùng với center của HeartWithEnergy)")]
-    public Transform center;
+    [Header("Khoảng cách history giữa các heart")]
+    [Tooltip("Càng lớn thì tim cách nhau càng xa (đơn vị: số mẫu history)")]
+    public float pointsPerHeart = 18f;   
 
-    [Header("Khoảng cách góc giữa các heart (độ)")]
-    public float angleStep = 15f;
+    [Header("Ghi history leader")]
+    [Tooltip("Khoảng thời gian giữa 2 mẫu history, 0.01–0.02 là mượt")]
+    public float recordInterval = 0.01f;
 
-    [Header("Độ mượt khi bình thường")]
-    public float normalFollowPosLerp = 10f;
-    public float normalFollowRotLerp = 10f;
+    [Header("Độ mượt follower bám theo (bình thường)")]
+    public float normalFollowPosLerp = 15f;
+    public float normalFollowRotLerp = 15f;
 
-    [Header("Độ mượt khi BOOST (bám sát hơn)")]
+    [Header("Độ mượt follower bám theo (khi BOOST)")]
     public float boostFollowPosLerp = 40f;
     public float boostFollowRotLerp = 40f;
 
-    void LateUpdate()
+    struct Pose
     {
-        if (hearts.Count == 0 || center == null) return;
+        public Vector3 pos;
+        public Quaternion rot;
+    }
+
+    List<Pose> _history = new List<Pose>();
+    float _recordTimer;
+
+    void Start()
+    {
+        InitHistory();
+    }
+
+    void InitHistory()
+    {
+        _history.Clear();
+
+        if (hearts.Count == 0)
+            return;
+
+        Pose p;
+        p.pos = hearts[0].position;
+        p.rot = hearts[0].rotation;
+        _history.Add(p);
+    }
+
+    void Update()
+    {
+        if (hearts.Count == 0)
+            return;
 
         Transform leader = hearts[0];
 
-        Vector3 centerPos = center.position;
-        Vector3 leaderOffset = leader.position - centerPos;
-        float radius = leaderOffset.magnitude;
+        // 1) Ghi history của leader
+        _recordTimer += Time.deltaTime;
+        if (_recordTimer >= recordInterval)
+        {
+            _recordTimer = 0f;
 
-        if (radius < 0.0001f) return;
+            Pose p;
+            p.pos = leader.position;
+            p.rot = leader.rotation;
 
-        // hướng chuẩn từ tâm tới leader
-        Vector3 baseDir = leaderOffset.normalized;
+            _history.Insert(0, p); // phần tử 0 là frame mới nhất
 
-        // 🔹 xem hiện tại có đang boost không
+            // giữ history vừa đủ dài
+            int maxPoints = Mathf.CeilToInt(hearts.Count * pointsPerHeart) + 2;
+            if (_history.Count > maxPoints)
+            {
+                _history.RemoveAt(_history.Count - 1);
+            }
+        }
+
+        if (_history.Count < 2)
+            return;
+
+        // 2) Chọn độ Lerp theo trạng thái BOOST
         bool isBoosting = HeartWithEnergy.IsBoostingGlobal;
-
         float posLerp = isBoosting ? boostFollowPosLerp : normalFollowPosLerp;
         float rotLerp = isBoosting ? boostFollowRotLerp : normalFollowRotLerp;
 
+        // 3) Follower bám theo history
         for (int i = 1; i < hearts.Count; i++)
         {
             Transform follower = hearts[i];
 
-            // mỗi heart lệch thêm angleStep độ quanh trục Y
-            float angle = angleStep * i;
-            Quaternion rotAround = Quaternion.AngleAxis(-angle, Vector3.up); // -hay + tùy chiều
+            // index history mà tim thứ i nên theo (spacing CỐ ĐỊNH)
+            float fIndex = i * pointsPerHeart;
 
-            Vector3 targetOffset = rotAround * baseDir * radius;
-            Vector3 targetPos = centerPos + targetOffset;
+            if (fIndex >= _history.Count - 1)
+                fIndex = _history.Count - 1.001f; // tránh out of range
 
-            // 🔹 nội suy cho mềm, nhưng khi boost thì Lerp rất nhanh → gần như dính target
+            int idx0 = Mathf.FloorToInt(fIndex);
+            int idx1 = Mathf.Clamp(idx0 + 1, 0, _history.Count - 1);
+            float t = fIndex - idx0;
+
+            Pose p0 = _history[idx0];
+            Pose p1 = _history[idx1];
+
+            // nội suy giữa 2 frame history → target mềm
+            Vector3 targetPos = Vector3.Lerp(p0.pos, p1.pos, t);
+            Quaternion targetRot = Quaternion.Slerp(p0.rot, p1.rot, t);
+
+            // follower trôi dần tới target → chuyển động mượt, không giật
             follower.position = Vector3.Lerp(
                 follower.position,
                 targetPos,
@@ -62,7 +116,7 @@ public class HeartChainManager : MonoBehaviour
 
             follower.rotation = Quaternion.Slerp(
                 follower.rotation,
-                leader.rotation,
+                targetRot,
                 rotLerp * Time.deltaTime
             );
         }
@@ -74,6 +128,12 @@ public class HeartChainManager : MonoBehaviour
         if (!hearts.Contains(newHeart))
         {
             hearts.Add(newHeart);
+
+            // nếu chưa có history thì init
+            if (_history.Count == 0)
+            {
+                InitHistory();
+            }
         }
     }
 
