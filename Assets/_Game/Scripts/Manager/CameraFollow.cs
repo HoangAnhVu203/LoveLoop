@@ -2,27 +2,86 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[DisallowMultipleComponent]
 public class CameraFollow : MonoBehaviour
 {
+    [Header("Follow Settings")]
+    [SerializeField] Vector3 offset = new Vector3(0, 5f, -10f);
+    [SerializeField] float moveSpeed = 5f;
 
-    [SerializeField] Vector3 offset;
+    [Header("Target (tự động = Heart leader)")]
     [SerializeField] Transform target;
-    [SerializeField] float moveSpeed;
-    // Start is called before the first frame update
-    void Start()
+    [SerializeField] HeartChainManager chainManager;
+
+    void Awake()
     {
-        offset = transform.position - target.position;
+        if (chainManager == null)
+        {
+            chainManager = FindObjectOfType<HeartChainManager>();
+        }
     }
 
-    // Update is called once per frame
+    void Start()
+    {
+        if (target == null)
+        {
+            UpdateTargetToLeader();
+        }
+        if (target != null)
+        {
+            offset = transform.position - target.position;
+        }
+    }
+
     void LateUpdate()
     {
-        transform.position = Vector3.Lerp(transform.position, target.position + offset, moveSpeed * Time.deltaTime);
+        AutoUpdateTargetFromLeader();
+
+        if (target == null) return;
+
+        Vector3 desiredPos = target.position + offset;
+        transform.position = Vector3.Lerp(
+            transform.position,
+            desiredPos,
+            moveSpeed * Time.deltaTime
+        );
     }
 
     public void SetTarget(Transform newTarget)
     {
         target = newTarget;
-        offset = transform.position - target.position;
+        if (target != null)
+        {
+            offset = transform.position - target.position;
+        }
+    }
+
+    public void UpdateTargetToLeader()
+    {
+        if (chainManager == null) return;
+
+        Transform leader = chainManager.GetLeader();
+        if (leader != null)
+        {
+            target = leader;
+        }
+    }
+
+    void AutoUpdateTargetFromLeader()
+    {
+        if (chainManager == null)
+        {
+            chainManager = FindObjectOfType<HeartChainManager>();
+            if (chainManager == null) return;
+        }
+
+        Transform leader = chainManager.GetLeader();
+        if (leader == null) return;
+        if (target != leader)
+        {
+            target = leader;
+
+            offset = transform.position - target.position;
+        }
     }
 }

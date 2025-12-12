@@ -4,15 +4,12 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class HeartChainManager : MonoBehaviour
 {
-    [Header("Danh sách Heart (0 = leader)")]
+    [Header("Heart list")]
     public List<Transform> hearts = new List<Transform>();
 
     [Header("History theo khoảng cách")]
-    [Tooltip("Khoảng cách (world units) giữa 2 mẫu history của leader")]
-    public float sampleDistance = 0.05f; 
-
-    [Tooltip("Số mẫu history giữa 2 heart liên tiếp")]
-    public float pointsPerHeart = 10f;      
+    public float sampleDistance = 0.05f;
+    public float pointsPerHeart = 10f;
 
     [Header("Độ mượt follower bám theo (bình thường)")]
     public float normalFollowPosLerp = 15f;
@@ -22,8 +19,11 @@ public class HeartChainManager : MonoBehaviour
     public float boostFollowPosLerp = 25f;
     public float boostFollowRotLerp = 25f;
 
-    [Header("Smoothing giữa normal ↔ boost lerp")]
+    [Header("Blend giữa normal ↔ boost")]
     public float followLerpBlendSpeed = 10f;
+
+    [Header("Leader Settings")]
+    public Transform center; // tâm cho HeartWithEnergy
 
     struct Pose
     {
@@ -35,20 +35,17 @@ public class HeartChainManager : MonoBehaviour
 
     Vector3 _lastRecordPos;
     bool _hasLastRecordPos;
-
-    // lerp hiện tại (smooth giữa normal & boost)
     float _currentPosLerp;
     float _currentRotLerp;
 
     void Start()
     {
         InitHistory();
-
         _currentPosLerp = normalFollowPosLerp;
         _currentRotLerp = normalFollowRotLerp;
     }
 
-    void InitHistory()
+    public void InitHistory()
     {
         _history.Clear();
         _hasLastRecordPos = false;
@@ -74,13 +71,11 @@ public class HeartChainManager : MonoBehaviour
 
         Transform leader = hearts[0];
 
-        // 1) Ghi history theo QUÃNG ĐƯỜNG
         RecordLeaderHistoryByDistance(leader);
 
         if (_history.Count < 2)
             return;
 
-        // 2) Chọn lerp theo trạng thái BOOST (không đụng vào spacing nữa)
         bool isBoosting = HeartWithEnergy.IsBoostingGlobal;
 
         float targetPosLerp = isBoosting ? boostFollowPosLerp : normalFollowPosLerp;
@@ -89,14 +84,12 @@ public class HeartChainManager : MonoBehaviour
         _currentPosLerp = Mathf.Lerp(_currentPosLerp, targetPosLerp, followLerpBlendSpeed * Time.deltaTime);
         _currentRotLerp = Mathf.Lerp(_currentRotLerp, targetRotLerp, followLerpBlendSpeed * Time.deltaTime);
 
-        // 3) Follower bám theo history với spacing CỐ ĐỊNH
+        // follower bám theo history
         for (int i = 1; i < hearts.Count; i++)
         {
             Transform follower = hearts[i];
 
-            // index history mà tim thứ i nên theo
             float fIndex = i * pointsPerHeart;
-
             if (fIndex >= _history.Count - 1)
                 fIndex = _history.Count - 1.001f;
 
@@ -110,7 +103,6 @@ public class HeartChainManager : MonoBehaviour
             Vector3 targetPos = Vector3.Lerp(p0.pos, p1.pos, t);
             Quaternion targetRot = Quaternion.Slerp(p0.rot, p1.rot, t);
 
-            // follower trôi dần tới target (mượt, không giật)
             follower.position = Vector3.Lerp(
                 follower.position,
                 targetPos,
@@ -149,7 +141,7 @@ public class HeartChainManager : MonoBehaviour
             p.pos = currentPos;
             p.rot = leader.rotation;
 
-            _history.Insert(0, p); 
+            _history.Insert(0, p);
             _lastRecordPos = currentPos;
 
             int maxPoints = Mathf.CeilToInt(hearts.Count * pointsPerHeart) + 5;
@@ -162,12 +154,6 @@ public class HeartChainManager : MonoBehaviour
 
     public void RegisterHeart(Transform newHeart)
     {
-
-        // if (newHeart.parent != transform)
-        // {
-        //     newHeart.SetParent(transform);
-        // }
-        
         if (!hearts.Contains(newHeart))
         {
             hearts.Add(newHeart);
@@ -181,6 +167,140 @@ public class HeartChainManager : MonoBehaviour
         }
     }
 
+    // ===== SNAP toàn bộ chain về đúng vị trí theo history (tránh đè nhau sau merge) =====
+    public void SnapAllHeartsToHistory()
+    {
+        if (hearts.Count == 0 || _history.Count < 2)
+            return;
+
+        for (int i = 0; i < hearts.Count; i++)
+        {
+            Transform tf = hearts[i];
+
+            float fIndex = i * pointsPerHeart;
+            if (fIndex >= _history.Count - 1)
+                fIndex = _history.Count - 1.001f;
+
+            int idx0 = Mathf.FloorToInt(fIndex);
+            int idx1 = Mathf.Clamp(idx0 + 1, 0, _history.Count - 1);
+            float t = fIndex - idx0;
+
+            Pose p0 = _history[idx0];
+            Pose p1 = _history[idx1];
+
+            Vector3 targetPos = Vector3.Lerp(p0.pos, p1.pos, t);
+            Quaternion targetRot = Quaternion.Slerp(p0.rot, p1.rot, t);
+
+            tf.position = targetPos;
+            tf.rotation = targetRot;
+        }
+    }
+
+    // ========= Leader / Weight =========
+
+    void MoveEnergyToNewLeader(Transform oldLeader, Transform newLeader)
+    {
+        if (newLeader == null) return;
+
+        if (oldLeader != null)
+        {
+            var oldEnergy = oldLeader.GetComponent<HeartWithEnergy>();
+            if (oldEnergy != null)
+                oldEnergy.enabled = false;
+        }
+
+        var newEnergy = newLeader.GetComponent<HeartWithEnergy>();
+        if (newEnergy == null)
+            newEnergy = newLeader.gameObject.AddComponent<HeartWithEnergy>();
+
+        newEnergy.enabled = true;
+
+        if (newEnergy.center == null && center != null)
+            newEnergy.center = center;
+    }
+
+    public void RecalculateLeaderByWeight()
+    {
+        if (hearts == null || hearts.Count == 0) return;
+
+        int bestIndex = 0;
+        int bestWeight = int.MinValue;
+
+        for (int i = 0; i < hearts.Count; i++)
+        {
+            var stats = hearts[i].GetComponent<HeartStats>();
+            int w = (stats != null) ? stats.weight : 0;
+
+            if (w > bestWeight)
+            {
+                bestWeight = w;
+                bestIndex = i;
+            }
+        }
+
+        Transform oldLeader = hearts[0];
+        Transform newLeader = hearts[bestIndex];
+
+        if (newLeader == oldLeader)
+            return;
+
+        // Xoay list sao cho newLeader về index 0
+        List<Transform> newList = new List<Transform>(hearts.Count);
+        int n = hearts.Count;
+        for (int i = 0; i < n; i++)
+        {
+            int idx = (bestIndex + i) % n;
+            newList.Add(hearts[idx]);
+        }
+        hearts = newList;
+
+        // Cập nhật Energy cho leader mới
+        MoveEnergyToNewLeader(oldLeader, hearts[0]);
+
+        RebuildHistoryFromCurrentChain();
+        SnapAllHeartsToHistory();
+
+        // Cập nhật lại history[0] theo vị trí leader mới
+        if (_history.Count > 0)
+        {
+            Pose p = _history[0];
+            p.pos = hearts[0].position;
+            p.rot = hearts[0].rotation;
+            _history[0] = p;
+            _lastRecordPos = hearts[0].position;
+            _hasLastRecordPos = true;
+        }
+
+        // Ép toàn bộ chain về đúng vị trí theo history
+        SnapAllHeartsToHistory();
+
+        // InitHistory();
+
+        Debug.Log($"[Leader] Đổi leader sang: {hearts[0].name} (weight = {bestWeight})");
+    }
+
+    public void RebuildHistoryFromCurrentChain()
+    {
+        _history.Clear();
+        _hasLastRecordPos = false;
+
+        if (hearts == null || hearts.Count == 0) return;
+
+        int need = Mathf.CeilToInt(hearts.Count * pointsPerHeart) + 5;
+
+        int h = 0;
+        while (_history.Count < need)
+        {
+            int idx = Mathf.Clamp(h, 0, hearts.Count - 1);
+            _history.Add(new Pose { pos = hearts[idx].position, rot = hearts[idx].rotation });
+            h++;
+        }
+
+        _lastRecordPos = hearts[0].position;
+        _hasLastRecordPos = true;
+    }
+
+
     public Transform GetLeader()
     {
         return hearts.Count > 0 ? hearts[0] : null;
@@ -190,4 +310,10 @@ public class HeartChainManager : MonoBehaviour
     {
         return hearts.Count > 0 ? hearts[hearts.Count - 1] : null;
     }
+
+    public void ForceResetHistory()
+    {
+        InitHistory();
+    }
+
 }

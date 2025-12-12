@@ -110,14 +110,12 @@ public class HeartWithEnergy : MonoBehaviour
         // nội suy tốc độ mượt
         _currentSpeed = Mathf.Lerp(_currentSpeed, _targetSpeed, speedLerp * Time.deltaTime);
 
-        // DI CHUYỂN: ưu tiên path, nếu không có thì xoay quanh center như cũ
         if (path != null && path.TotalLength > 0f)
         {
             MoveAlongPath();
         }
         else if (center != null)
         {
-            // fallback: quỹ đạo tròn cũ
             transform.RotateAround(center.position, Vector3.up, _currentSpeed * Time.deltaTime);
         }
 
@@ -136,8 +134,7 @@ public class HeartWithEnergy : MonoBehaviour
 
     bool IsPressing()
     {
-        // Để đơn giản trong Editor: chỉ cần giữ chuột trái là boost.
-        // Khi build mobile có thể đổi sang dùng InputHelper + touch như anh muốn.
+
 #if UNITY_EDITOR || UNITY_STANDALONE
         return Input.GetMouseButton(0);
 #else

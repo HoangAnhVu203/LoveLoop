@@ -13,6 +13,6 @@ public class PanelGamePlay : UICanvas
     [System.Obsolete]
     public void MergeHeartBTN()
     {
-        HeartManager.Instance.MergeLast3Pink();
+        HeartManager.Instance.MergeAnyTriple();
     }
 }

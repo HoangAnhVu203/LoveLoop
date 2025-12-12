@@ -60,11 +60,42 @@ public class HeartManager : MonoBehaviour
         if (energy != null)
             energy.enabled = false;
 
-
+        
         manager.RegisterHeart(newHeart.transform);
+
+        manager.RecalculateLeaderByWeight();
+
+        // manager.ForceResetHistory();
     }
 
+    [System.Obsolete]
+    int FindFirstMergeTripleIndex(out HeartType foundType)
+    {
+        foundType = default;
+        var chain = HeartChainManagerInstance;
+        if (chain == null || chain.hearts == null) return -1;
 
+        var list = chain.hearts;
+        int n = list.Count;
+        if (n < 3) return -1;
+
+        for (int i = 0; i <= n - 3; i++)
+        {
+            var s0 = list[i].GetComponent<HeartStats>();
+            var s1 = list[i + 1].GetComponent<HeartStats>();
+            var s2 = list[i + 2].GetComponent<HeartStats>();
+
+            if (s0 == null || s1 == null || s2 == null) continue;
+
+            if (s0.type == s1.type && s1.type == s2.type)
+            {
+                foundType = s0.type;
+                return i;   
+            }
+        }
+
+        return -1;
+    }
 
 
     [System.Obsolete]
@@ -76,7 +107,7 @@ public class HeartManager : MonoBehaviour
     // ======== MERGE PINK → LIGHT BLUE ========
 
     [System.Obsolete]
-    public void MergeLast3Pink()
+    public void MergeAnyTriple()
     {
         var chain = HeartChainManagerInstance;
         if (chain == null || chain.hearts == null)
@@ -91,36 +122,38 @@ public class HeartManager : MonoBehaviour
             return;
         }
 
-        int pinkLayer = LayerMask.NameToLayer(pinkLayerName);
-        if (pinkLayer < 0)
+        // 1. Tìm cụm 3 liên tiếp cùng loại
+        HeartType tripleType;
+        int startIndex = FindFirstMergeTripleIndex(out tripleType);
+        if (startIndex < 0)
         {
-            Debug.LogWarning("[Merge] Layer HeartPink không tồn tại.");
+            Debug.Log("[Merge] Không có cụm 3 heart liên tiếp cùng loại.");
             return;
         }
 
-        int i0 = count - 3;
-        int i1 = count - 2;
-        int i2 = count - 1;
+        Transform h0 = list[startIndex];
+        Transform h1 = list[startIndex + 1];
+        Transform h2 = list[startIndex + 2];
 
-        Transform h0 = list[i0];
-        Transform h1 = list[i1];
-        Transform h2 = list[i2];
-
-        // Nếu không phải cả 3 cùng Pink → không merge
-        if (h0.gameObject.layer != pinkLayer ||
-            h1.gameObject.layer != pinkLayer ||
-            h2.gameObject.layer != pinkLayer)
+        HeartStats stats = h0.GetComponent<HeartStats>();
+        if (stats == null)
         {
-            Debug.Log("[Merge] 3 heart cuối không cùng layer Pink → không merge.");
+            Debug.LogWarning("[Merge] Thiếu HeartStats trên heart.");
             return;
         }
 
-        // Lưu vị trí spawn = heart ở giữa
-        Vector3 spawnPos = h1.position;
+        if (stats.mergeResultPrefab == null)
+        {
+            Debug.LogWarning("[Merge] mergeResultPrefab chưa được gán cho loại " + stats.type);
+            return;
+        }
+
+        // 2. Vị trí spawn = trung bình 3 tim
+        Vector3 spawnPos = (h0.position + h1.position + h2.position) / 3f;
         Quaternion spawnRot = h1.rotation;
 
-        // XÓA 3 heart cuối (dùng count ban đầu)
-        for (int i = count - 1; i >= count - 3; i--)
+        // 3. Xoá 3 tim khỏi list & scene (từ index lớn về nhỏ)
+        for (int i = startIndex + 2; i >= startIndex; i--)
         {
             Transform h = list[i];
             list.RemoveAt(i);
@@ -128,50 +161,45 @@ public class HeartManager : MonoBehaviour
                 Destroy(h.gameObject);
         }
 
-        if (heartLightBluePrefab == null)
-        {
-            return;
-        }
-
+        // 4. Tạo tim mới
         GameObject newHeart = Instantiate(
-            heartLightBluePrefab,
+            stats.mergeResultPrefab,
             spawnPos,
             spawnRot,
-            spawnParent
+            spawnParent   // vẫn là con của HeartRoot
         );
 
         newHeart.transform.localScale = h1.localScale;
 
-        // Xử lý HeartWithEnergy cho heart mới
+        // 5. Xử lý HeartWithEnergy cho tim mới
         var energy = newHeart.GetComponent<HeartWithEnergy>();
 
-        // Nếu sau khi xoá 3 con, list đang RỖNG → heart mới là LEADER
         if (list.Count == 0)
         {
+            // Không còn tim nào → tim mới là leader
             if (energy == null)
-            {
                 energy = newHeart.AddComponent<HeartWithEnergy>();
-            }
 
-            // Leader phải được phép boost
             energy.enabled = true;
-
-            // Gán center nếu cần
             if (energy.center == null && center != null)
                 energy.center = center;
         }
         else
         {
-            // Vẫn còn leader cũ ở list[0] -> heart mới chỉ là follower
+            // Vẫn còn leader cũ → tim mới là follower
             if (energy != null)
                 energy.enabled = false;
         }
 
-        // Gắn vào chuỗi (last)
-        list.Add(newHeart.transform);
+        // 6. Thêm tim mới vào chuỗi tại vị trí startIndex
+        list.Insert(startIndex, newHeart.transform);
 
-        Debug.Log($"[Merge] Merge OK: trước {count} → sau {list.Count}");
+        Debug.Log($"[Merge] Merge 3 {tripleType} tại index {startIndex} → {stats.mergeResultPrefab.name}");
+
+        // 7. Sau khi chuỗi thay đổi → tính lại leader theo weight
+        chain.RecalculateLeaderByWeight();
     }
+
 
 
     // ======== Helper lấy leader / last từ ChainManager ========
@@ -195,4 +223,7 @@ public class HeartManager : MonoBehaviour
 
         return chain.hearts[0];
     }
+
+    
+
 }
