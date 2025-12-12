@@ -6,18 +6,18 @@ public class HeartManager : MonoBehaviour
     public static HeartManager Instance;
 
     [Header("Prefab mặc định khi Add")]
-    public GameObject heartPrefab;          
+    public GameObject heartPrefab;
     public Transform spawnParent;
-    public Transform center;        
+    public Transform center;
     public float followSmooth = 8f;
 
     [Header("Merge Settings")]
-    public GameObject heartPinkPrefab;       
-    public GameObject heartLightBluePrefab; 
-    public int needCountToMerge = 3;       
+    public GameObject heartPinkPrefab;
+    public GameObject heartLightBluePrefab;
+    public int needCountToMerge = 3;
 
     [Tooltip("Tên Layer dùng cho HeartPink (để nhận diện)")]
-    public string pinkLayerName = "HeartPink"; 
+    public string pinkLayerName = "HeartPink";
 
     void Awake()
     {
@@ -26,7 +26,6 @@ public class HeartManager : MonoBehaviour
 
     void Update()
     {
-        
     }
 
     [System.Obsolete]
@@ -43,13 +42,14 @@ public class HeartManager : MonoBehaviour
         }
 
         Transform last = manager.hearts[manager.hearts.Count - 1];
+        if (last == null) return;
 
         // Spawn vào ROOT
         GameObject newHeart = Instantiate(
             heartPrefab,
             last.position,
             last.rotation,
-            spawnParent 
+            spawnParent
         );
 
         // COPY SCALE CHUẨN TỪ HEART CŨ
@@ -60,12 +60,11 @@ public class HeartManager : MonoBehaviour
         if (energy != null)
             energy.enabled = false;
 
-        
         manager.RegisterHeart(newHeart.transform);
 
+        // recalc leader và đảm bảo energy đúng
         manager.RecalculateLeaderByWeight();
-
-        // manager.ForceResetHistory();
+        manager.EnsureEnergyOnLeaderOnly();
     }
 
     [System.Obsolete]
@@ -90,13 +89,12 @@ public class HeartManager : MonoBehaviour
             if (s0.type == s1.type && s1.type == s2.type)
             {
                 foundType = s0.type;
-                return i;   
+                return i;
             }
         }
 
         return -1;
     }
-
 
     [System.Obsolete]
     HeartChainManager HeartChainManagerInstance
@@ -104,7 +102,7 @@ public class HeartManager : MonoBehaviour
         get { return FindObjectOfType<HeartChainManager>(); }
     }
 
-    // ======== MERGE PINK → LIGHT BLUE ========
+    // ======== MERGE ANY TRIPLE ========
 
     [System.Obsolete]
     public void MergeAnyTriple()
@@ -135,6 +133,8 @@ public class HeartManager : MonoBehaviour
         Transform h1 = list[startIndex + 1];
         Transform h2 = list[startIndex + 2];
 
+        if (h0 == null || h1 == null || h2 == null) return;
+
         HeartStats stats = h0.GetComponent<HeartStats>();
         if (stats == null)
         {
@@ -153,6 +153,7 @@ public class HeartManager : MonoBehaviour
         Quaternion spawnRot = h1.rotation;
 
         // 3. Xoá 3 tim khỏi list & scene (từ index lớn về nhỏ)
+        // NOTE: remove khỏi list trước để tránh logic khác đọc nhầm
         for (int i = startIndex + 2; i >= startIndex; i--)
         {
             Transform h = list[i];
@@ -166,41 +167,28 @@ public class HeartManager : MonoBehaviour
             stats.mergeResultPrefab,
             spawnPos,
             spawnRot,
-            spawnParent   // vẫn là con của HeartRoot
+            spawnParent
         );
 
         newHeart.transform.localScale = h1.localScale;
 
-        // 5. Xử lý HeartWithEnergy cho tim mới
+        // 5. KHÔNG tự quyết Energy ở đây (để chain quyết sau khi recalc)
         var energy = newHeart.GetComponent<HeartWithEnergy>();
-
-        if (list.Count == 0)
-        {
-            // Không còn tim nào → tim mới là leader
-            if (energy == null)
-                energy = newHeart.AddComponent<HeartWithEnergy>();
-
-            energy.enabled = true;
-            if (energy.center == null && center != null)
-                energy.center = center;
-        }
-        else
-        {
-            // Vẫn còn leader cũ → tim mới là follower
-            if (energy != null)
-                energy.enabled = false;
-        }
+        if (energy != null) energy.enabled = false;
 
         // 6. Thêm tim mới vào chuỗi tại vị trí startIndex
         list.Insert(startIndex, newHeart.transform);
 
         Debug.Log($"[Merge] Merge 3 {tripleType} tại index {startIndex} → {stats.mergeResultPrefab.name}");
 
-        // 7. Sau khi chuỗi thay đổi → tính lại leader theo weight
+        // 7. Recalc leader + đảm bảo energy đúng
         chain.RecalculateLeaderByWeight();
+        chain.EnsureEnergyOnLeaderOnly();
+
+        // 8. Reset history + snap để node nối ngay, không bị đứng/khựng
+        chain.ForceResetHistory();
+        chain.SnapAllHeartsToHistory();
     }
-
-
 
     // ======== Helper lấy leader / last từ ChainManager ========
 
@@ -223,7 +211,4 @@ public class HeartManager : MonoBehaviour
 
         return chain.hearts[0];
     }
-
-    
-
 }

@@ -43,6 +43,9 @@ public class HeartChainManager : MonoBehaviour
         InitHistory();
         _currentPosLerp = normalFollowPosLerp;
         _currentRotLerp = normalFollowRotLerp;
+
+        // đảm bảo leader có energy ngay từ đầu (an toàn)
+        EnsureEnergyOnLeaderOnly();
     }
 
     public void InitHistory()
@@ -70,6 +73,7 @@ public class HeartChainManager : MonoBehaviour
             return;
 
         Transform leader = hearts[0];
+        if (leader == null) return;
 
         RecordLeaderHistoryByDistance(leader);
 
@@ -88,6 +92,7 @@ public class HeartChainManager : MonoBehaviour
         for (int i = 1; i < hearts.Count; i++)
         {
             Transform follower = hearts[i];
+            if (follower == null) continue;
 
             float fIndex = i * pointsPerHeart;
             if (fIndex >= _history.Count - 1)
@@ -119,6 +124,8 @@ public class HeartChainManager : MonoBehaviour
 
     void RecordLeaderHistoryByDistance(Transform leader)
     {
+        if (leader == null) return;
+
         if (!_hasLastRecordPos)
         {
             _lastRecordPos = leader.position;
@@ -154,6 +161,8 @@ public class HeartChainManager : MonoBehaviour
 
     public void RegisterHeart(Transform newHeart)
     {
+        if (newHeart == null) return;
+
         if (!hearts.Contains(newHeart))
         {
             hearts.Add(newHeart);
@@ -167,7 +176,7 @@ public class HeartChainManager : MonoBehaviour
         }
     }
 
-    // ===== SNAP toàn bộ chain về đúng vị trí theo history (tránh đè nhau sau merge) =====
+    // ===== SNAP toàn bộ chain về đúng vị trí theo history =====
     public void SnapAllHeartsToHistory()
     {
         if (hearts.Count == 0 || _history.Count < 2)
@@ -176,6 +185,7 @@ public class HeartChainManager : MonoBehaviour
         for (int i = 0; i < hearts.Count; i++)
         {
             Transform tf = hearts[i];
+            if (tf == null) continue;
 
             float fIndex = i * pointsPerHeart;
             if (fIndex >= _history.Count - 1)
@@ -202,7 +212,8 @@ public class HeartChainManager : MonoBehaviour
     {
         if (newLeader == null) return;
 
-        if (oldLeader != null)
+        // chỉ disable old nếu old != new
+        if (oldLeader != null && oldLeader != newLeader)
         {
             var oldEnergy = oldLeader.GetComponent<HeartWithEnergy>();
             if (oldEnergy != null)
@@ -219,6 +230,32 @@ public class HeartChainManager : MonoBehaviour
             newEnergy.center = center;
     }
 
+    /// <summary>
+    /// Chắc chắn chỉ leader có HeartWithEnergy bật, follower tắt.
+    /// Dùng để tránh case merge xong leader bị thiếu/disable energy.
+    /// </summary>
+    public void EnsureEnergyOnLeaderOnly()
+    {
+        if (hearts == null || hearts.Count == 0) return;
+
+        for (int i = 0; i < hearts.Count; i++)
+        {
+            if (hearts[i] == null) continue;
+
+            var e = hearts[i].GetComponent<HeartWithEnergy>();
+            if (i == 0)
+            {
+                if (e == null) e = hearts[i].gameObject.AddComponent<HeartWithEnergy>();
+                e.enabled = true;
+                if (e.center == null && center != null) e.center = center;
+            }
+            else
+            {
+                if (e != null) e.enabled = false;
+            }
+        }
+    }
+
     public void RecalculateLeaderByWeight()
     {
         if (hearts == null || hearts.Count == 0) return;
@@ -228,6 +265,8 @@ public class HeartChainManager : MonoBehaviour
 
         for (int i = 0; i < hearts.Count; i++)
         {
+            if (hearts[i] == null) continue;
+
             var stats = hearts[i].GetComponent<HeartStats>();
             int w = (stats != null) ? stats.weight : 0;
 
@@ -241,8 +280,13 @@ public class HeartChainManager : MonoBehaviour
         Transform oldLeader = hearts[0];
         Transform newLeader = hearts[bestIndex];
 
+        // Dù leader không đổi, vẫn phải đảm bảo energy đúng (tránh đứng im)
         if (newLeader == oldLeader)
+        {
+            MoveEnergyToNewLeader(oldLeader, oldLeader);
+            EnsureEnergyOnLeaderOnly();
             return;
+        }
 
         // Xoay list sao cho newLeader về index 0
         List<Transform> newList = new List<Transform>(hearts.Count);
@@ -256,11 +300,13 @@ public class HeartChainManager : MonoBehaviour
 
         // Cập nhật Energy cho leader mới
         MoveEnergyToNewLeader(oldLeader, hearts[0]);
+        EnsureEnergyOnLeaderOnly();
 
+        // rebuild history + snap để không giật
         RebuildHistoryFromCurrentChain();
         SnapAllHeartsToHistory();
 
-        // Cập nhật lại history[0] theo vị trí leader mới
+        // cập nhật history[0] theo vị trí leader mới
         if (_history.Count > 0)
         {
             Pose p = _history[0];
@@ -271,10 +317,7 @@ public class HeartChainManager : MonoBehaviour
             _hasLastRecordPos = true;
         }
 
-        // Ép toàn bộ chain về đúng vị trí theo history
         SnapAllHeartsToHistory();
-
-        // InitHistory();
 
         Debug.Log($"[Leader] Đổi leader sang: {hearts[0].name} (weight = {bestWeight})");
     }
@@ -300,7 +343,6 @@ public class HeartChainManager : MonoBehaviour
         _hasLastRecordPos = true;
     }
 
-
     public Transform GetLeader()
     {
         return hearts.Count > 0 ? hearts[0] : null;
@@ -315,5 +357,4 @@ public class HeartChainManager : MonoBehaviour
     {
         InitHistory();
     }
-
 }
