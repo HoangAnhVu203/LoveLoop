@@ -186,7 +186,7 @@ public class HeartManager : MonoBehaviour
         chain.EnsureEnergyOnLeaderOnly();
 
         // 8. Reset history + snap để node nối ngay, không bị đứng/khựng
-        chain.ForceResetHistory();
+        chain.RebuildHistoryByChainSegments();
         chain.SnapAllHeartsToHistory();
     }
 

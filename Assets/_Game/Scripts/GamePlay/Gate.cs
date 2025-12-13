@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Gate : MonoBehaviour
@@ -14,8 +15,11 @@ public class Gate : MonoBehaviour
         if (stats.gateHitVFX != null)
         {
             Instantiate(stats.gateHitVFX, other.transform.position, Quaternion.identity);
+
+            Destroy(stats.gateHitVFX, 2f);
         }
 
-        // Debug.Log($"[Gate] {other.name} hit gate: +{stats.moneyValue}$, total = {totalMoney}");
     }
+
+    
 }

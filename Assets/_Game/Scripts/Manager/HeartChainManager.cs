@@ -357,4 +357,47 @@ public class HeartChainManager : MonoBehaviour
     {
         InitHistory();
     }
+
+    public void RebuildHistoryByChainSegments()
+    {
+        _history.Clear();
+        _hasLastRecordPos = false;
+
+        if (hearts == null || hearts.Count == 0) return;
+
+        int need = Mathf.CeilToInt(hearts.Count * pointsPerHeart) + 5;
+
+        Pose p0 = new Pose { pos = hearts[0].position, rot = hearts[0].rotation };
+        _history.Add(p0);
+
+        for (int i = 1; i < hearts.Count; i++)
+        {
+            Transform a = hearts[i - 1];
+            Transform b = hearts[i];
+            if (a == null || b == null) continue;
+
+            int kCount = Mathf.Max(1, Mathf.RoundToInt(pointsPerHeart));
+            for (int k = 1; k <= kCount; k++)
+            {
+                float t = k / (float)kCount;
+                var pp = new Pose
+                {
+                    pos = Vector3.Lerp(a.position, b.position, t),
+                    rot = Quaternion.Slerp(a.rotation, b.rotation, t)
+                };
+                _history.Add(pp);
+
+                if (_history.Count >= need) break;
+            }
+
+            if (_history.Count >= need) break;
+        }
+
+        Pose last = _history[_history.Count - 1];
+        while (_history.Count < need) _history.Add(last);
+
+        _lastRecordPos = hearts[0].position;
+        _hasLastRecordPos = true;
+    }
+
 }
