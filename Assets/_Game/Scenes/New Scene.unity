@@ -1378,7 +1378,7 @@ MonoBehaviour:
   hearts:
   - {fileID: 1430543861}
   sampleDistance: 0.05
-  pointsPerHeart: 17
+  pointsPerHeart: 12
   normalFollowPosLerp: 15
   normalFollowRotLerp: 15
   boostFollowPosLerp: 40
@@ -1463,7 +1463,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a98278f34de24b2da5a73926b61242a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  totalMoney: 0
+  chain: {fileID: 428114546}
+  rider: {fileID: 881612758}
 --- !u!65 &482455544
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1599,7 +1600,7 @@ GameObject:
   - component: {fileID: 517963518}
   - component: {fileID: 517963517}
   m_Layer: 0
-  m_Name: Road
+  m_Name: Road_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3761,7 +3762,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a98278f34de24b2da5a73926b61242a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  totalMoney: 0
+  chain: {fileID: 428114546}
+  rider: {fileID: 881612758}
 --- !u!65 &1422427019
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4646,6 +4648,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isDestroyOnClose: 0
+  mergeButtonGO: {fileID: 1692174281}
 --- !u!114 &1709066662
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5865,14 +5868,14 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 937637868}
+  - {fileID: 1343462233}
   - {fileID: 716886505}
+  - {fileID: 1124105999}
   - {fileID: 2094258014}
   - {fileID: 1813501342}
-  - {fileID: 1124105999}
   - {fileID: 482455547}
   - {fileID: 1422427022}
   - {fileID: 517963518}
-  - {fileID: 1343462233}
   - {fileID: 686378866}
   - {fileID: 1413492099}
   - {fileID: 881612759}

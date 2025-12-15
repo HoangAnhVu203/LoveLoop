@@ -37,6 +37,7 @@ public class PlayerMoney : MonoBehaviour
     void UpdateUI()
     {
         if (moneyText != null)
-            moneyText.text = currentMoney.ToString("$ " + currentMoney);
+            moneyText.text = "$ " + currentMoney.ToString("N0");
     }
+
 }

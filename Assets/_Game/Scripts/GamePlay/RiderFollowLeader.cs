@@ -13,7 +13,7 @@ public class RiderFollowLeader : MonoBehaviour
     public float posLerpBoost  = 60f;
     public float rotLerpBoost  = 60f;
 
-    public float blendSpeed = 10f; // 8–15
+    public float blendSpeed = 10f;
 
     float _pLerp, _rLerp;
 
