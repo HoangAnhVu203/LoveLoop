@@ -9,26 +9,19 @@ public class HeartChainManager : MonoBehaviour
     public List<Transform> hearts = new List<Transform>();
 
     [Header("Leader movement")]
-    [Tooltip("Ưu tiên dùng splinePath (RoadManager cấp). Nếu false sẽ quay quanh center.")]
     public bool useSplinePath = true;
 
     public SplinePath splinePath;
 
-    [Tooltip("Chạy ngược chiều")]
     public bool reverseDirection = true;
 
-    [Tooltip("Tốc độ leader khi bình thường (m/s trên spline)")]
     public float normalSpeed = 30f;
 
-    [Tooltip("Tốc độ leader khi boost (m/s trên spline)")]
     public float boostSpeed = 100f;
 
     public float speedLerp = 5f;
 
-    [Tooltip("Offset để model nằm đúng hướng")]
     public Vector3 modelEulerOffset = new Vector3(0f, 0f, 0f);
-
-    [Tooltip("Khóa hướng chạy nằm trên mặt phẳng XZ")]
     public bool lockToXZPlane = true;
 
     [Header("History sampling")]
@@ -83,7 +76,6 @@ public class HeartChainManager : MonoBehaviour
         EnsureEnergyOnLeaderOnly();
         BindEnergyToLeader(true);
 
-        // snap leader lên spline ngay từ đầu (nếu có)
         if (useSplinePath && splinePath != null && splinePath.TotalLength > 0f && GetLeader() != null)
         {
             splinePath.Rebuild();
@@ -105,7 +97,7 @@ public class HeartChainManager : MonoBehaviour
         float speedTarget = isBoosting ? boostSpeed : normalSpeed;
         _currentLeaderSpeed = Mathf.Lerp(_currentLeaderSpeed, speedTarget, speedLerp * Time.deltaTime);
 
-        // ---- MOVE LEADER (ƯU TIÊN SPLINE) ----
+        // ---- MOVE LEADER ----
         if (useSplinePath && splinePath != null && splinePath.TotalLength > 0f)
         {
             float dir = reverseDirection ? -1f : 1f;
@@ -115,8 +107,7 @@ public class HeartChainManager : MonoBehaviour
         }
         else if (center != null)
         {
-            // fallback: quay quanh center
-            float dir = reverseDirection ? 1f : -1f; // vì RotateAround dùng Vector3.down
+            float dir = reverseDirection ? 1f : -1f; 
             leader.RotateAround(center.position, Vector3.down, dir * _currentLeaderSpeed * Time.deltaTime);
 
             ApplyLeaderRotationFixOnly(leader);
@@ -329,7 +320,6 @@ public class HeartChainManager : MonoBehaviour
         var e = leader.GetComponent<HeartWithEnergy>();
         if (e == null) e = leader.gameObject.AddComponent<HeartWithEnergy>();
 
-        // HeartChainManager điều khiển movement, HeartWithEnergy chỉ quản lý energy/boost state
         e.driveMovement = false;
 
         if (forceCenterBind || e.center == null)

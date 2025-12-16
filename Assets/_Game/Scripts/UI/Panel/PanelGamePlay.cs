@@ -81,4 +81,9 @@ public class PanelGamePlay : UICanvas
     {
         RoadManager.Instance?.NextRoad();
     }
+    
+    public void AddGateBTN()
+    {
+        GateManager.Instance?.SpawnGate();
+    }
 }

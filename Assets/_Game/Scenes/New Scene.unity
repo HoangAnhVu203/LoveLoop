@@ -969,6 +969,63 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 360665715}
   m_CullTransparentMesh: 1
+--- !u!1 &364394978
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 364394979}
+  - component: {fileID: 364394980}
+  m_Layer: 0
+  m_Name: GateManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &364394979
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 364394978}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1813501342}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &364394980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 364394978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 478cc1b29906eaf4285b67e473f50191, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GateManager
+  gatePrefab: {fileID: 3971952147153455909, guid: 8a477b57003104941ac5a362e2907695, type: 3}
+  gateRoot: {fileID: 364394979}
+  chain: {fileID: 428114546}
+  minSpawnRatio: 0.05
+  maxSpawnRatio: 0.95
+  avoidLeaderWindowRatio: 0.05
+  minGateSpacingRatio: 0.08
+  maxRandomTries: 40
+  fallbackScanStepRatio: 0.01
+  gateWorldOffset: {x: 0, y: 0.02, z: 0}
+  alignToSplineForward: 1
+  gateEulerOffset: {x: 0, y: 90, z: 0}
+  maxGates: 24
 --- !u!1 &396596570
 GameObject:
   m_ObjectHideFlags: 0
@@ -2723,6 +2780,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1226152387}
   m_CullTransparentMesh: 1
+--- !u!1 &1320816262
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1320816263}
+  m_Layer: 0
+  m_Name: GateRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1320816263
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1320816262}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1746358840}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1343462230
 GameObject:
   m_ObjectHideFlags: 0
@@ -3175,7 +3263,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1645124747}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1709066661}
+        m_TargetAssemblyTypeName: PanelGamePlay, Assembly-CSharp
+        m_MethodName: AddGateBTN
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1645124747
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3554,6 +3654,7 @@ Transform:
   m_Children:
   - {fileID: 932517724}
   - {fileID: 1413492099}
+  - {fileID: 1320816263}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1800309575
@@ -3867,6 +3968,7 @@ Transform:
   - {fileID: 428114547}
   - {fileID: 528414168}
   - {fileID: 1344391526}
+  - {fileID: 364394979}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1914744793

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class RoadManager : Singleton<RoadManager>
 {
-    [Header("Road prefabs (mỗi prefab có SplinePath)")]
+    [Header("Road prefabs")]
     public List<GameObject> roadPrefabs = new();
     public Transform roadRoot;
 
@@ -42,11 +42,9 @@ public class RoadManager : Singleton<RoadManager>
 
     IEnumerator SwitchRoadCR(int idx)
     {
-        // chỉ bật 1 road
         for (int i = 0; i < _instances.Count; i++)
             _instances[i].SetActive(i == idx);
 
-        // đợi 1 frame để road mới OnEnable/Awake ổn định
         yield return null;
 
         var spline = _instances[idx].GetComponentInChildren<SplinePath>(true);
@@ -60,6 +58,10 @@ public class RoadManager : Singleton<RoadManager>
 
         if (chain != null)
             chain.SetSplinePathKeepState(spline);
+
+        if (GateManager.Instance != null)
+            GateManager.Instance.OnRoadChanged(spline);
+
 
         Debug.Log($"[RoadManager] Switched to road {idx}: {_instances[idx].name}");
     }
