@@ -28,7 +28,6 @@ public class HeartManager : MonoBehaviour
     {
     }
 
-    [System.Obsolete]
     public void AddHeart()
     {
         if (HeartChainManagerInstance == null) return;
@@ -67,7 +66,6 @@ public class HeartManager : MonoBehaviour
         manager.EnsureEnergyOnLeaderOnly();
     }
 
-    [System.Obsolete]
     int FindFirstMergeTripleIndex(out HeartType foundType)
     {
         foundType = default;
@@ -96,7 +94,6 @@ public class HeartManager : MonoBehaviour
         return -1;
     }
 
-    [System.Obsolete]
     HeartChainManager HeartChainManagerInstance
     {
         get { return FindObjectOfType<HeartChainManager>(); }
@@ -104,7 +101,6 @@ public class HeartManager : MonoBehaviour
 
     // ======== MERGE ANY TRIPLE ========
 
-    [System.Obsolete]
     public void MergeAnyTriple()
     {
         var chain = HeartChainManagerInstance;
@@ -192,7 +188,6 @@ public class HeartManager : MonoBehaviour
 
     // ======== Helper lấy leader / last từ ChainManager ========
 
-    [System.Obsolete]
     public Transform GetLastHeart()
     {
         var chain = HeartChainManagerInstance;
@@ -202,7 +197,6 @@ public class HeartManager : MonoBehaviour
         return chain.hearts[chain.hearts.Count - 1];
     }
 
-    [System.Obsolete]
     public Transform GetLeader()
     {
         var chain = HeartChainManagerInstance;

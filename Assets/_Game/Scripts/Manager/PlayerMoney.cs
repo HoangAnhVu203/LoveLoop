@@ -10,7 +10,7 @@ public class PlayerMoney : MonoBehaviour
     public Text moneyText;
 
     [Header("Money Settings")]
-    public int currentMoney = 0;
+    public long currentMoney = 0;
 
     void Awake()
     {
@@ -27,7 +27,7 @@ public class PlayerMoney : MonoBehaviour
         UpdateUI();
     }
 
-    public void AddMoney(int amount)
+    public void AddMoney(long amount)
     {
         currentMoney += amount;
         if (currentMoney < 0) currentMoney = 0;

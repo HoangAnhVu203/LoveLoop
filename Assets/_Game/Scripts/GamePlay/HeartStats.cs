@@ -39,7 +39,7 @@ public class HeartStats : MonoBehaviour
     public int weight = 1;
 
     [Header("Giá trị tiền của Heart ($)")]
-    public int moneyValue = 10;
+    public long moneyValue = 10;
 
     [Header("VFX khi va chạm Gate")]
     public GameObject gateHitVFX;

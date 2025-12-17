@@ -128,7 +128,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HeartStats
   type: 18
   weight: 19
-  moneyValue: 2147483647
+  moneyValue: 274800000000
   gateHitVFX: {fileID: 1936744674238603655, guid: 84bb133257fd742d7b0559f28787abb4, type: 3}
   mergeResultPrefab: {fileID: 1658421503025724822, guid: f3fc6e0b166114bce94771c8cc00cc92, type: 3}
 --- !u!1001 &4280142037244664495

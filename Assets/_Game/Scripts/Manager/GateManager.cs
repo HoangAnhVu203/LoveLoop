@@ -9,6 +9,10 @@ public class GateManager : Singleton<GateManager>
     {
         public GameObject go;
         [Range(0f, 1f)] public float ratio;
+
+        // avatar gắn theo gate (optional)
+        public GateAvatarMarker marker;
+        public int girlIndex = -1;
     }
 
     [Header("Prefab & Root")]
@@ -25,9 +29,7 @@ public class GateManager : Singleton<GateManager>
 
     [Header("Anti-overlap")]
     [Range(0f, 1f)] public float minGateSpacingRatio = 0.08f;
-
     public int maxRandomTries = 40;
-
     [Range(0.001f, 0.1f)] public float fallbackScanStepRatio = 0.01f;
 
     [Header("Transform")]
@@ -38,6 +40,14 @@ public class GateManager : Singleton<GateManager>
     [Header("Optional limits")]
     public int maxGates = 0;
 
+    [Header("Avatar (optional)")]
+    public GateAvatarMarker avatarPrefab;     // prefab marker (có Canvas World Space + Image)
+    public GirlAvatarOrder girlOrder;         // list avatar theo thứ tự
+    public Vector3 avatarLocalOffset = new Vector3(0f, 1.2f, 0f);
+    public bool loopGirls = false;            // hết avatar thì quay vòng hay dừng?
+
+    int nextGirlIndex = 0;
+
     readonly List<GateEntry> _gates = new();
     SplinePath _currentSpline;
 
@@ -47,6 +57,7 @@ public class GateManager : Singleton<GateManager>
         if (gateRoot == null) gateRoot = transform;
     }
 
+
     public void OnRoadChanged(SplinePath newSpline)
     {
         _currentSpline = newSpline;
@@ -55,7 +66,7 @@ public class GateManager : Singleton<GateManager>
         for (int i = 0; i < _gates.Count; i++)
         {
             var e = _gates[i];
-            if (e?.go == null) continue;
+            if (e == null || e.go == null) continue;
             ApplyGateByRatio(e);
         }
     }
@@ -68,10 +79,7 @@ public class GateManager : Singleton<GateManager>
             return;
         }
 
-        if (_currentSpline == null)
-        {
-            if (chain != null) _currentSpline = chain.splinePath;
-        }
+        ResolveSpline();
 
         if (_currentSpline == null || _currentSpline.TotalLength <= 0f)
         {
@@ -91,13 +99,17 @@ public class GateManager : Singleton<GateManager>
             return;
         }
 
+        // 1) spawn gate
         var go = Instantiate(gatePrefab, gateRoot);
         go.name = $"{gatePrefab.name}_Gate_{_gates.Count}";
 
+        // 2) tạo entry và apply position/rotation theo ratio
         var entry = new GateEntry { go = go, ratio = ratio };
         _gates.Add(entry);
-
         ApplyGateByRatio(entry);
+
+        // 3) attach avatar theo thứ tự (nếu có)
+        AttachAvatarMarker(entry);
     }
 
     public void ClearAllGates()
@@ -107,6 +119,50 @@ public class GateManager : Singleton<GateManager>
             if (_gates[i]?.go != null) Destroy(_gates[i].go);
         }
         _gates.Clear();
+    }
+
+    // ================== INTERNAL ==================
+
+    void ResolveSpline()
+    {
+        if (_currentSpline != null && _currentSpline.TotalLength > 0f) return;
+
+        if (chain != null) _currentSpline = chain.splinePath;
+    }
+
+    void AttachAvatarMarker(GateEntry entry)
+    {
+        if (entry == null || entry.go == null) return;
+        if (avatarPrefab == null) return;
+        if (girlOrder == null || girlOrder.avatars == null || girlOrder.avatars.Count == 0) return;
+
+        int count = girlOrder.avatars.Count;
+
+        // chọn index theo thứ tự
+        int idx = nextGirlIndex;
+
+        if (idx >= count)
+        {
+            if (!loopGirls)
+            {
+                // hết nhân vật -> không spawn avatar nữa
+                return;
+            }
+            idx = idx % count;
+        }
+
+        // spawn marker làm con của gate
+        var marker = Instantiate(avatarPrefab, entry.go.transform);
+        marker.transform.localPosition = avatarLocalOffset;
+        marker.transform.localRotation = Quaternion.identity;
+        marker.transform.localScale = Vector3.one;
+
+        marker.SetAvatar(girlOrder.avatars[idx]);
+
+        entry.marker = marker;
+        entry.girlIndex = idx;
+
+        nextGirlIndex++;
     }
 
     // ================== PICK RATIO ==================
@@ -123,6 +179,7 @@ public class GateManager : Singleton<GateManager>
         float avoidLeader = Mathf.Clamp01(avoidLeaderWindowRatio);
         float minSpacing = Mathf.Clamp01(minGateSpacingRatio);
 
+        // random tries
         for (int k = 0; k < Mathf.Max(1, maxRandomTries); k++)
         {
             float r = UnityEngine.Random.Range(rMin, rMax);
@@ -132,8 +189,8 @@ public class GateManager : Singleton<GateManager>
             return true;
         }
 
+        // fallback scan
         float step = Mathf.Clamp(fallbackScanStepRatio, 0.001f, 0.1f);
-
         float start = UnityEngine.Random.Range(rMin, rMax);
 
         for (int pass = 0; pass < 2; pass++)
@@ -163,9 +220,11 @@ public class GateManager : Singleton<GateManager>
 
     bool IsValidRatio(float r, float leaderRatio, float avoidLeader, float minSpacing)
     {
+        bool loop = (_currentSpline != null && _currentSpline.loop);
+
         if (avoidLeader > 0f)
         {
-            float dLeader = RatioDistance01(r, leaderRatio, _currentSpline != null && _currentSpline.loop);
+            float dLeader = RatioDistance01(r, leaderRatio, loop);
             if (dLeader < avoidLeader) return false;
         }
 
@@ -176,7 +235,7 @@ public class GateManager : Singleton<GateManager>
                 var e = _gates[i];
                 if (e == null || e.go == null) continue;
 
-                float dGate = RatioDistance01(r, e.ratio, _currentSpline != null && _currentSpline.loop);
+                float dGate = RatioDistance01(r, e.ratio, loop);
                 if (dGate < minSpacing) return false;
             }
         }
@@ -235,5 +294,14 @@ public class GateManager : Singleton<GateManager>
         {
             e.go.transform.rotation = Quaternion.Euler(gateEulerOffset);
         }
+    }
+
+    // ================== OPTIONAL API ==================
+
+    public int GatesCount => _gates.Count;
+
+    public void ResetGirlOrder(int startIndex = 0)
+    {
+        nextGirlIndex = Mathf.Max(0, startIndex);
     }
 }
