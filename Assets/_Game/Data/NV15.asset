@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d824474ab80f2482f8e0d7fc33a93878, type: 3}
+  m_Name: NV15
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterData
+  characterName: Lee
+  avatar: {fileID: 21300000, guid: 444326649b1764d9eb8c328a1f720700, type: 3}
+  description: Charismatic, Charming, Reliable, Reserved, Emotional
+  level: 1
+  levelUpCost: 0
+  revenueMultiplier: 0.1
+  photos:
+  - photo: {fileID: 21300000, guid: 585551a4ba1344a7f97cc378a6fff01b, type: 3}
+    comment: "I like it when you\u2019re like this"
+  - photo: {fileID: 21300000, guid: e8a8d8dd892e54488ab4f2d6488ac897, type: 3}
+    comment: I want your attention right now.
+  - photo: {fileID: 21300000, guid: 66b97d03ff7f347248a72254964cd866, type: 3}
+    comment: "I\u2019m enjoying this tension."
+  - photo: {fileID: 21300000, guid: c54d767e8fd134c9c8bf3ec54c4218fd, type: 3}
+    comment: I enjoy a bit of tension.

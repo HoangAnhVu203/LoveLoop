@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d824474ab80f2482f8e0d7fc33a93878, type: 3}
+  m_Name: NV22
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterData
+  characterName: Olivia
+  avatar: {fileID: 21300000, guid: 67b9a14a088af4413bdfee3129d185ce, type: 3}
+  description: Charming, Intelligent, Gentle, Wise, Charismatic
+  level: 1
+  levelUpCost: 0
+  revenueMultiplier: 0.1
+  photos:
+  - photo: {fileID: 21300000, guid: 94cca7271acdd48a181e7b0fa5f0cd7e, type: 3}
+    comment: "This is getting a little intense\u2026 in a good way."
+  - photo: {fileID: 21300000, guid: b101fea88d1da46ceb0cc275fd34117b, type: 3}
+    comment: Talking to you feels different.
+  - photo: {fileID: 21300000, guid: 6c847f322e2a54a1cb7133d7e97d1306, type: 3}
+    comment: Come a bit closer to me.
+  - photo: {fileID: 21300000, guid: d01e87414d1c24894afb0135ba94d83e, type: 3}
+    comment: "I don\u2019t always play it safe."

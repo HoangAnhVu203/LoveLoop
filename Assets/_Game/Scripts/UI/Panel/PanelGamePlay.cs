@@ -195,4 +195,9 @@ public class PanelGamePlay : UICanvas
     {
         GateManager.Instance?.SpawnGate();
     }
+
+    public void OpenFlirtBookBTN()
+    {
+        UIManager.Instance.OpenUI<FlirtBookPanel>();
+    }
 }

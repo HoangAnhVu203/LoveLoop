@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d824474ab80f2482f8e0d7fc33a93878, type: 3}
+  m_Name: NV1
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterData
+  characterName: Mia
+  avatar: {fileID: 21300000, guid: a967d4835a5c04f7d807feb96fcbbe7c, type: 3}
+  description: Innocent, Shy, Sweet, Gentle
+  level: 1
+  levelUpCost: 0
+  revenueMultiplier: 0.1
+  photos:
+  - photo: {fileID: 21300000, guid: a986353830d304d649f5e36604a4320f, type: 3}
+    comment: 'I don''t have any selifies, but... this picture make me haappy. I hope
+      it make you smile too!!! '
+  - photo: {fileID: 21300000, guid: ffaff898da6de44b39a327ea7320c0a1, type: 3}
+    comment: I felt a little shy taking this... but I wanted to share it with you.
+  - photo: {fileID: 21300000, guid: 1a6da0285c9f84007b6badbdf627f14b, type: 3}
+    comment: Let's cook dinner togerther, I'll be your dessert my love.
+  - photo: {fileID: 21300000, guid: 16ffe78da5a3d42d1adae449b4cb888e, type: 3}
+    comment: "I\u2019m the kind of girl your mother warned you about."

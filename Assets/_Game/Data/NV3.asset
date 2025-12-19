@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d824474ab80f2482f8e0d7fc33a93878, type: 3}
+  m_Name: NV3
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterData
+  characterName: Lena
+  avatar: {fileID: 21300000, guid: 5d7c40b5c11834250884b6c052f7b282, type: 3}
+  description: Warm - hearted, Playful but Reserved, Dreamy, Fiercely Loyal
+  level: 1
+  levelUpCost: 0
+  revenueMultiplier: 0.1
+  photos:
+  - photo: {fileID: 21300000, guid: 1555c41e7fef04f5e8282842ab7fa731, type: 3}
+    comment: Careful, if you keep looking at me like that, I might do something bad.
+  - photo: {fileID: 21300000, guid: 1be8ab7a5352c4ffcab06a23e5e4f691, type: 3}
+    comment: "Come closer. I want to see if you\u2019re as confident as you look."
+  - photo: {fileID: 21300000, guid: e73444a53a52b4d099bf4d35ae13bccb, type: 3}
+    comment: "Let\u2019s not rush. Anticipation is my favorite part."
+  - photo: {fileID: 21300000, guid: 8c0193da1378e4f53ade1410ca96e543, type: 3}
+    comment: I know exactly what effect I have on you.

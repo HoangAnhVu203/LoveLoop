@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d824474ab80f2482f8e0d7fc33a93878, type: 3}
+  m_Name: NV7
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterData
+  characterName: Sophia
+  avatar: {fileID: 21300000, guid: 738af97b9bb2642049e4ec55a42db812, type: 3}
+  description: Intelligent, Soft-Spoken, Workaholic with a Sweet side
+  level: 1
+  levelUpCost: 0
+  revenueMultiplier: 0.1
+  photos:
+  - photo: {fileID: 21300000, guid: 5e019dcb4ed194938a420d1dc5736a10, type: 3}
+    comment: I like where this is going.
+  - photo: {fileID: 21300000, guid: f1e4dc7606bbf400d8c421ed58fba812, type: 3}
+    comment: You think you can handle me?
+  - photo: {fileID: 21300000, guid: f769294646c5640ebbbfe242e750e7c8, type: 3}
+    comment: Is it hot in here, or is it just you?
+  - photo: {fileID: 21300000, guid: 8f6bc7699322645759478d3a89cb32f3, type: 3}
+    comment: "I don\u2019t chase. But for you, I might bend the rules."

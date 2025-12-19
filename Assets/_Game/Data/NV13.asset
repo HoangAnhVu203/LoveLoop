@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d824474ab80f2482f8e0d7fc33a93878, type: 3}
+  m_Name: NV13
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterData
+  characterName: Karina
+  avatar: {fileID: 21300000, guid: 34009d0b2bbd34e56ba502b1ec4f93d8, type: 3}
+  description: Strong-willed, Wise, Intelligent, Charismatic, Independent
+  level: 1
+  levelUpCost: 0
+  revenueMultiplier: 0.1
+  photos:
+  - photo: {fileID: 21300000, guid: 762a3d21b75364412904f6175492c26c, type: 3}
+    comment: You started something.
+  - photo: {fileID: 21300000, guid: 8eebb5c1ce9274e2d85efb4ac79ec718, type: 3}
+    comment: "I can\u2019t sleep thinking about you."
+  - photo: {fileID: 21300000, guid: 6262f13f2267c4ca9a0f9370a45b0102, type: 3}
+    comment: I want you responsive.
+  - photo: {fileID: 21300000, guid: 3e59400827b0f4d8488205d0097d51ab, type: 3}
+    comment: I want the tension, not relief.
