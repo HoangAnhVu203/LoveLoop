@@ -13,6 +13,11 @@ public class PhotoViewerPanelUI : UICanvas
     [SerializeField] Transform content;
     [SerializeField] PhotoThumbItemUI thumbPrefab;
 
+    [SerializeField] RectTransform particleRoot;
+    [SerializeField] UIHeartParticle particlePrefab;
+
+    [SerializeField] Button likeBTN;
+
     List<PhotoThumbItemUI> thumbs = new();
     CharacterData current;
     int currentIndex;
@@ -69,4 +74,21 @@ public class PhotoViewerPanelUI : UICanvas
     {
         Close();
     }
+
+    public void LikeBTN()
+    {
+        PlayUnlockEffect(particleRoot);
+        likeBTN.image.color = Color.deepPink;
+    }
+
+    void PlayUnlockEffect(RectTransform target)
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            var p = Instantiate(particlePrefab, particleRoot);
+            p.transform.position = target.position;
+            p.Play();
+        }
+    }
+
 }
