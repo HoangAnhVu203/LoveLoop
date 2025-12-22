@@ -32,4 +32,10 @@ public class UIHeartParticle : MonoBehaviour
 
         Destroy(gameObject);
     }
+
+    private void OnDisable()
+    {
+        Destroy(gameObject);
+    }
+
 }

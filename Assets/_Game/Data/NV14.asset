@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d824474ab80f2482f8e0d7fc33a93878, type: 3}
   m_Name: NV14
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
+  characterId: char_14
   characterName: Miya
   avatar: {fileID: 21300000, guid: d26798b9138cc45e4a3bb76c2be3115a, type: 3}
   description: Gentle, Warm-hearted, Strong-willed,  Graceful
@@ -19,11 +20,19 @@ MonoBehaviour:
   levelUpCost: 0
   revenueMultiplier: 0.1
   photos:
-  - photo: {fileID: 21300000, guid: 05ed179086aee432aa038be6b11db375, type: 3}
+  - photoId: p0
+    photo: {fileID: 21300000, guid: 05ed179086aee432aa038be6b11db375, type: 3}
     comment: "I want you, and I\u2019m not going to soften that."
-  - photo: {fileID: 21300000, guid: 732b5682806e041c9962dce0c7302f55, type: 3}
+    requiredLevel: 4
+  - photoId: p1
+    photo: {fileID: 21300000, guid: 732b5682806e041c9962dce0c7302f55, type: 3}
     comment: "I\u2019m not trying to be good tonight."
-  - photo: {fileID: 21300000, guid: a9b3e5d6656af4905a0eb26a81890282, type: 3}
+    requiredLevel: 6
+  - photoId: p2
+    photo: {fileID: 21300000, guid: a9b3e5d6656af4905a0eb26a81890282, type: 3}
     comment: I want you, plain and simple.
-  - photo: {fileID: 21300000, guid: 99fbc783a041a4a8896418ced2acd24b, type: 3}
+    requiredLevel: 8
+  - photoId: p3
+    photo: {fileID: 21300000, guid: 99fbc783a041a4a8896418ced2acd24b, type: 3}
     comment: Let me take control.
+    requiredLevel: 10

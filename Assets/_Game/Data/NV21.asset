@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d824474ab80f2482f8e0d7fc33a93878, type: 3}
   m_Name: NV21
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
+  characterId: char_21
   characterName: Valentina
   avatar: {fileID: 21300000, guid: f2a9fadc0b7ec4fe8b4c51901c66e35f, type: 3}
   description: Elegant, Wise,  Smart, Compassionate
@@ -19,11 +20,19 @@ MonoBehaviour:
   levelUpCost: 0
   revenueMultiplier: 0.1
   photos:
-  - photo: {fileID: 21300000, guid: 03cbbc51d8aea4008bca825642fd2e04, type: 3}
+  - photoId: p0
+    photo: {fileID: 21300000, guid: 03cbbc51d8aea4008bca825642fd2e04, type: 3}
     comment: "You\u2019re dangerous to talk to this late."
-  - photo: {fileID: 21300000, guid: 1816c87d0536549d38b07b8f5cd1b10e, type: 3}
+    requiredLevel: 4
+  - photoId: p1
+    photo: {fileID: 21300000, guid: 1816c87d0536549d38b07b8f5cd1b10e, type: 3}
     comment: This feels personal.
-  - photo: {fileID: 21300000, guid: 4b5b36229e7f1425984f34454f3ea9e9, type: 3}
+    requiredLevel: 6
+  - photoId: p2
+    photo: {fileID: 21300000, guid: 4b5b36229e7f1425984f34454f3ea9e9, type: 3}
     comment: You linger in my thoughts.
-  - photo: {fileID: 21300000, guid: 12fb7419954ed488492aff92902194ec, type: 3}
+    requiredLevel: 8
+  - photoId: p3
+    photo: {fileID: 21300000, guid: 12fb7419954ed488492aff92902194ec, type: 3}
     comment: "I\u2019m enjoying this way too much."
+    requiredLevel: 10

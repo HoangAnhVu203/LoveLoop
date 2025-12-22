@@ -8,16 +8,28 @@ public class FlirtBookPanel : UICanvas
     [SerializeField] CharacterThumbItemUI thumbPrefab;
     [SerializeField] List<CharacterData> characters;
     [SerializeField] ScrollSnapToCenter centerSelector;
-    [SerializeField] Button cameraBtn;
-    CharacterData currentCharacter;
 
-    void Awake()
-    {
-    }
+    //[Header("Buttons")]
+    //[SerializeField] Button levelUpBtn;
+
+    [Header("UI Detail")]
+    [SerializeField] CharacterInfoPanelUI infoPanel;
+
+    [SerializeField] Button cameraBtn;
+
+    CharacterData currentCharacter;
 
     void Start()
     {
         Build();
+
+        //if (levelUpBtn != null)
+        //{
+        //    levelUpBtn.onClick.RemoveAllListeners();
+        //    levelUpBtn.onClick.AddListener(OnLevelUpClicked);
+        //}
+
+        RefreshCurrentUI();
     }
 
     void Build()
@@ -36,12 +48,62 @@ public class FlirtBookPanel : UICanvas
 
         centerSelector.SetItems(spawned);
 
-        centerSelector.OnCenteredChanged = (c) => currentCharacter = c;
+        centerSelector.OnCenteredChanged = (c) =>
+        {
+            currentCharacter = c;
+            RefreshCurrentUI();
+        };
 
-        // set mặc định ngay lập tức (để bấm photo không bị null)
         if (characters != null && characters.Count > 0)
             currentCharacter = characters[0];
+    }
 
+    void RefreshCurrentUI()
+    {
+        if (currentCharacter == null) return;
+
+        if (infoPanel != null)
+            infoPanel.Show(currentCharacter);
+
+        RefreshLevelUpButtonState();
+    }
+
+    void RefreshLevelUpButtonState()
+    {
+        //if (levelUpBtn == null || currentCharacter == null) return;
+
+        bool canUp = CharacterProgressStore.CanLevelUp(
+            currentCharacter.characterId,
+            currentCharacter.level <= 0 ? 1 : currentCharacter.level
+        );
+
+        //levelUpBtn.interactable = canUp;
+    }
+
+    public void OnLevelUpClicked()
+    {
+        if (currentCharacter == null) return;
+
+        int defaultLv = currentCharacter.level <= 0 ? 1 : currentCharacter.level;
+        int currentLv = CharacterProgressStore.GetLevel(currentCharacter.characterId, defaultLv);
+
+        if (currentLv >= CharacterProgressStore.MAX_LEVEL)
+        {
+            RefreshLevelUpButtonState();
+            return;
+        }
+
+        // TODO: CHECK COST + TRỪ TIỀN 
+        // long cost = currentCharacter.levelUpCost;  cost theo LV
+        // if (PlayerMoney.Instance.money < cost) return;
+        // PlayerMoney.Instance.Spend(cost);
+
+        int newLv = CharacterProgressStore.LevelUp(currentCharacter.characterId, defaultLv);
+
+        if (infoPanel != null) infoPanel.Refresh();
+        RefreshLevelUpButtonState();
+
+        Debug.Log($"[LevelUp] {currentCharacter.characterId} -> LEVEL {newLv}");
     }
 
     public void CloseBTN()
@@ -57,7 +119,6 @@ public class FlirtBookPanel : UICanvas
             return;
         }
 
-        // Lấy instance vừa được mở
         var panel = UIManager.Instance.OpenUI<PhotoViewerPanelUI>();
         panel.Show(currentCharacter);
     }
@@ -66,5 +127,4 @@ public class FlirtBookPanel : UICanvas
     {
         UIManager.Instance.CloseUIDirectly<FlirtBookPanel>();
     }
-
 }

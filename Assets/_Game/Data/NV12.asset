@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d824474ab80f2482f8e0d7fc33a93878, type: 3}
   m_Name: NV12
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
+  characterId: char_12
   characterName: Lou
   avatar: {fileID: 21300000, guid: a2e63f141358d4b5590be83f01d34d06, type: 3}
   description: Sensitive, Reserved, Dedicated, Graceful
@@ -19,11 +20,19 @@ MonoBehaviour:
   levelUpCost: 0
   revenueMultiplier: 0.1
   photos:
-  - photo: {fileID: 21300000, guid: db9fdd17ede4a408d8cb0433228ca424, type: 3}
+  - photoId: p0
+    photo: {fileID: 21300000, guid: db9fdd17ede4a408d8cb0433228ca424, type: 3}
     comment: This is getting interesting.
-  - photo: {fileID: 21300000, guid: b4915ce73fcc84c028917c940f023294, type: 3}
+    requiredLevel: 4
+  - photoId: p1
+    photo: {fileID: 21300000, guid: b4915ce73fcc84c028917c940f023294, type: 3}
     comment: Stay with me for a bit.
-  - photo: {fileID: 21300000, guid: c59f1b277655a48469ec4530521362ae, type: 3}
+    requiredLevel: 6
+  - photoId: p2
+    photo: {fileID: 21300000, guid: c59f1b277655a48469ec4530521362ae, type: 3}
     comment: "You don\u2019t have to hold back too much."
-  - photo: {fileID: 21300000, guid: eb85e029618fd468fa09ea1b4ce65c45, type: 3}
+    requiredLevel: 8
+  - photoId: p3
+    photo: {fileID: 21300000, guid: eb85e029618fd468fa09ea1b4ce65c45, type: 3}
     comment: I want more than messages.
+    requiredLevel: 10

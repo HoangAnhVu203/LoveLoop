@@ -275,7 +275,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 367, y: -623}
-  m_SizeDelta: {x: 170, y: 170}
+  m_SizeDelta: {x: 160, y: 160}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8890044220535617606
 CanvasRenderer:
@@ -1100,9 +1100,12 @@ MonoBehaviour:
   commentText: {fileID: 6013449471949488928}
   content: {fileID: 3344303952912795949}
   thumbPrefab: {fileID: 1067923136156278446, guid: 478dc10acb70b4aa786b49242a9fbcdc, type: 3}
+  likeBTN: {fileID: 1084301085382890913}
+  likeIcon: {fileID: 4486282959989257742}
+  likedColor: {r: 1, g: 0, b: 0, a: 1}
+  unlikedColor: {r: 1, g: 1, b: 1, a: 1}
   particleRoot: {fileID: 9178698348849286091}
   particlePrefab: {fileID: 4481452230427092796, guid: 7237b89ae6e2048ff9f9b42bcc12c4e9, type: 3}
-  likeBTN: {fileID: 1084301085382890913}
 --- !u!1 &5403254990892157784
 GameObject:
   m_ObjectHideFlags: 0

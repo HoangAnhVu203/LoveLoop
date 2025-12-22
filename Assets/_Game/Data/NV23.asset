@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d824474ab80f2482f8e0d7fc33a93878, type: 3}
   m_Name: NV23
   m_EditorClassIdentifier: Assembly-CSharp::CharacterData
+  characterId: char_23
   characterName: Emelia
   avatar: {fileID: 21300000, guid: 6dbd4d38122704c1c8c162630278bfd6, type: 3}
   description: Dedicated, Charming, Charismatic, Smart
@@ -19,11 +20,19 @@ MonoBehaviour:
   levelUpCost: 0
   revenueMultiplier: 0.1
   photos:
-  - photo: {fileID: 21300000, guid: ff902230b66d24c19a45eb907740de76, type: 3}
+  - photoId: p0
+    photo: {fileID: 21300000, guid: ff902230b66d24c19a45eb907740de76, type: 3}
     comment: I feel closer to you than I should.
-  - photo: {fileID: 21300000, guid: 21010b6949a4d4a1a919e165ad276054, type: 3}
+    requiredLevel: 4
+  - photoId: p1
+    photo: {fileID: 21300000, guid: 21010b6949a4d4a1a919e165ad276054, type: 3}
     comment: You linger in my thoughts.
-  - photo: {fileID: 21300000, guid: e5c590af21534462e9359bb1c53d085f, type: 3}
+    requiredLevel: 6
+  - photoId: p2
+    photo: {fileID: 21300000, guid: e5c590af21534462e9359bb1c53d085f, type: 3}
     comment: "You\u2019re dangerous to talk to this late."
-  - photo: {fileID: 21300000, guid: ce0c9878f13c34fdeb31347fd0ffaffc, type: 3}
+    requiredLevel: 8
+  - photoId: p3
+    photo: {fileID: 21300000, guid: ce0c9878f13c34fdeb31347fd0ffaffc, type: 3}
     comment: You feel closer after dark.
+    requiredLevel: 10

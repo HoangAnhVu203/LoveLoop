@@ -4,6 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Game/Character Data")]
 public class CharacterData : ScriptableObject
 {
+    public string characterId;
     public string characterName;
     public Sprite avatar;
     public string description;
