@@ -41,8 +41,18 @@ public class PanelGamePlay : UICanvas
     [SerializeField] Image mergeFromIcon;
     [SerializeField] Image mergeToIcon;
 
+    [Header("Rose UI")]
     [SerializeField] TMP_Text roseText;
 
+    [Header("Gate UI")]
+    [SerializeField] TMP_Text gateCostText;
+    [SerializeField] Button addGateBtn;
+
+    [Header("Upgrade Road UI")]
+    [SerializeField] TMP_Text upgradeRoadCostText;
+    [SerializeField] Button upgradeRoadBtn;
+    [SerializeField] TMP_Text gateProgressText;   
+    [SerializeField] string gateProgressFormat = "{0}/{1}";
 
     Image _btnImage;
 
@@ -62,9 +72,9 @@ public class PanelGamePlay : UICanvas
 
             UpdateLapMoneyUI(GameManager.Instance.GetLapPreviewMoney());
         }
+
         if (RoseWallet.Instance != null && roseText != null)
             RoseWallet.Instance.BindRoseText(roseText);
-
 
         if (PlayerMoney.Instance != null && moneyText != null)
             PlayerMoney.Instance.BindMoneyText(moneyText);
@@ -90,7 +100,119 @@ public class PanelGamePlay : UICanvas
         _nextCheckTime = Time.time + checkInterval;
 
         if (_chain == null) _chain = FindObjectOfType<HeartChainManager>();
+
         RefreshMergeButtonIfNeeded();
+
+        RefreshGateCostUI();
+        RefreshUpgradeRoadUI();
+    }
+
+    // ================= MAIN REFRESH =================
+
+    public void Refresh()
+    {
+        RefreshGateCostUI();
+        RefreshUpgradeRoadUI();
+        RefreshAddHeartIcon();
+        RefreshHeartCapUI();
+        RefreshCostUI();
+
+        GameManager.Instance?.RefreshLapPreview();
+    }
+
+    // ================= ROAD UPGRADE UI =================
+
+    void RefreshUpgradeRoadUI()
+    {
+        if (upgradeRoadBtn == null && upgradeRoadCostText == null) return;
+
+        if (upgradeRoadBtn != null) upgradeRoadBtn.interactable = false;
+
+        if (RoadManager.Instance == null)
+        {
+            if (upgradeRoadCostText != null) upgradeRoadCostText.gameObject.SetActive(false);
+            return;
+        }
+
+        int totalRoads = (RoadManager.Instance.roadPrefabs != null) ? RoadManager.Instance.roadPrefabs.Count : 0;
+        int unlocked = RoadUpgradeStore.GetUnlockedRoadCount();
+        bool allUnlocked = (totalRoads > 0 && unlocked >= totalRoads);
+
+        int currentGates = RoadManager.Instance.GetTotalGateCountAllRoads();
+        int cap = RoadManager.Instance.GetTotalGateCap();
+        bool gatesFull = (cap > 0 && currentGates >= cap);
+
+        if (!gatesFull || allUnlocked)
+        {
+            if (upgradeRoadCostText != null) upgradeRoadCostText.gameObject.SetActive(false);
+            if (upgradeRoadBtn != null) upgradeRoadBtn.interactable = false;
+            return;
+        }
+
+        long cost = RoadUpgradeStore.GetNextUpgradeCost();
+        bool enoughRose = (RoseWallet.Instance != null && RoseWallet.Instance.CurrentRose >= cost);
+
+        if (upgradeRoadCostText != null)
+        {
+            upgradeRoadCostText.gameObject.SetActive(true);
+            upgradeRoadCostText.text = cost.ToString("N0");
+        }
+
+        if (upgradeRoadBtn != null)
+            upgradeRoadBtn.interactable = enoughRose && !allUnlocked;
+    }
+
+
+    // ================= GATE UI =================
+
+    void RefreshGateCostUI()
+    {
+        // 1) cập nhật progress 2/3, 4/6...
+        if (RoadManager.Instance != null)
+        {
+            int current = RoadManager.Instance.GetTotalGateCountAllRoads();
+            int cap = RoadManager.Instance.GetTotalGateCap();
+
+            if (gateProgressText != null)
+                gateProgressText.text = string.Format(gateProgressFormat, current, cap);
+        }
+        else
+        {
+            if (gateProgressText != null) gateProgressText.text = "0/0";
+        }
+
+        // 2) hiển thị cost gate kế tiếp như cũ
+        if (gateCostText != null)
+        {
+            long cost = GateCostStore.GetNextGateCost();
+            gateCostText.text = cost.ToString("N0");
+
+            bool enoughRose = (RoseWallet.Instance != null && RoseWallet.Instance.CurrentRose >= cost);
+
+            // rule: add gate chỉ được nếu road hiện tại chưa đủ 3 gate
+            bool canAddByRoad = (RoadManager.Instance == null) ? true : RoadManager.Instance.CanAddGateOnCurrentRoad();
+
+            if (addGateBtn != null)
+                addGateBtn.interactable = enoughRose && canAddByRoad;
+        }
+    }
+
+
+    // ================= COST UI =================
+
+    void RefreshCostUI()
+    {
+        if (addCostText != null)
+        {
+            long addCost = ActionCostStore.GetAddCost();
+            addCostText.text = costPrefix + MoneyFormatter.Format(addCost);
+        }
+
+        if (mergeCostText != null)
+        {
+            long mergeCost = ActionCostStore.GetMergeCost();
+            mergeCostText.text = costPrefix + MoneyFormatter.Format(mergeCost);
+        }
     }
 
     // ================= MERGE BUTTON =================
@@ -128,6 +250,38 @@ public class PanelGamePlay : UICanvas
             if (a.type == b.type && b.type == c.type) return true;
         }
         return false;
+    }
+
+    void RefreshMergePreviewUI()
+    {
+        if (HeartManager.Instance == null) return;
+
+        HeartManager.MergePreview p;
+        bool can = HeartManager.Instance.TryGetMergePreview(out p);
+
+        if (mergeButtonGO != null) mergeButtonGO.SetActive(can);
+
+        if (mergeCostText != null)
+            mergeCostText.gameObject.SetActive(can);
+
+        if (!can)
+        {
+            if (mergeFromIcon != null) mergeFromIcon.enabled = false;
+            if (mergeToIcon != null) mergeToIcon.enabled = false;
+            return;
+        }
+
+        if (mergeFromIcon != null)
+        {
+            mergeFromIcon.sprite = p.tripleIcon;
+            mergeFromIcon.enabled = (p.tripleIcon != null);
+        }
+
+        if (mergeToIcon != null)
+        {
+            mergeToIcon.sprite = p.resultIcon;
+            mergeToIcon.enabled = (p.resultIcon != null);
+        }
     }
 
     // ================= BOOST =================
@@ -190,31 +344,7 @@ public class PanelGamePlay : UICanvas
         Debug.Log($"[LAP] Completed. Earned = {total}");
     }
 
-    // ================= MAIN REFRESH =================
-
-    public void Refresh()
-    {
-        RefreshAddHeartIcon();
-        RefreshHeartCapUI();
-        RefreshCostUI();
-
-        GameManager.Instance?.RefreshLapPreview();
-    }
-
-    void RefreshCostUI()
-    {
-        if (addCostText != null)
-        {
-            long addCost = ActionCostStore.GetAddCost();
-            addCostText.text = costPrefix + MoneyFormatter.Format(addCost);
-        }
-
-        if (mergeCostText != null)
-        {
-            long mergeCost = ActionCostStore.GetMergeCost();
-            mergeCostText.text = costPrefix + MoneyFormatter.Format(mergeCost);
-        }
-    }
+    // ================= ICON / HEART CAP =================
 
     void RefreshAddHeartIcon()
     {
@@ -251,44 +381,10 @@ public class PanelGamePlay : UICanvas
         heartCapText.text = string.Format(capFormat, current, max);
     }
 
-    void RefreshMergePreviewUI()
-    {
-        if (HeartManager.Instance == null) return;
-
-        HeartManager.MergePreview p;
-        bool can = HeartManager.Instance.TryGetMergePreview(out p);
-
-        if (mergeButtonGO != null) mergeButtonGO.SetActive(can);
-
-        if (mergeCostText != null)
-            mergeCostText.gameObject.SetActive(can);
-
-        if (!can)
-        {
-            if (mergeFromIcon != null) mergeFromIcon.enabled = false;
-            if (mergeToIcon != null) mergeToIcon.enabled = false;
-            return;
-        }
-
-        if (mergeFromIcon != null)
-        {
-            mergeFromIcon.sprite = p.tripleIcon;
-            mergeFromIcon.enabled = (p.tripleIcon != null);
-        }
-
-        if (mergeToIcon != null)
-        {
-            mergeToIcon.sprite = p.resultIcon;
-            mergeToIcon.enabled = (p.resultIcon != null);
-        }
-    }
-
     // ================= BUTTON EVENTS =================
 
     public void AddHeartBTN()
     {
-        GameManager.Instance?.RefreshLapPreview();
-
         HeartManager.Instance.AddHeart();
         Refresh();
         ForceRefreshMergeButton();
@@ -296,8 +392,6 @@ public class PanelGamePlay : UICanvas
 
     public void MergeHeartBTN()
     {
-        GameManager.Instance?.RefreshLapPreview();
-
         HeartManager.Instance.MergeAnyTriple();
         Refresh();
         ForceRefreshMergeButton();
@@ -305,16 +399,32 @@ public class PanelGamePlay : UICanvas
 
     public void AddGateBTN()
     {
-        GameManager.Instance?.RefreshLapPreview();
+        bool ok = (GateManager.Instance != null) && GateManager.Instance.SpawnGate();
+        RefreshGateCostUI();
 
-        GateManager.Instance?.SpawnGate();
+        if (ok)
+            GameManager.Instance?.RefreshLapPreview();
+    }
 
-        GameManager.Instance?.RefreshLapPreview();
+    public void UpgradeRoadBTN()
+    {
+        bool ok = (RoadManager.Instance != null) && RoadManager.Instance.TryUpgradeRoad();
+
+        RefreshUpgradeRoadUI();
+        RefreshGateCostUI();
+
+        if (ok)
+        {
+            GameManager.Instance?.RefreshLapPreview();
+        }
     }
 
     public void NextRoadBTN()
     {
         RoadManager.Instance?.NextRoad();
+        RefreshGateCostUI();
+        RefreshUpgradeRoadUI();
+        GameManager.Instance?.RefreshLapPreview();
     }
 
     public void OpenFlirtBookBTN()

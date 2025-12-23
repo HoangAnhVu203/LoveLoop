@@ -10,7 +10,6 @@ public class GateManager : Singleton<GateManager>
         public GameObject go;
         [Range(0f, 1f)] public float ratio;
 
-        // avatar gắn theo gate (optional)
         public GateAvatarMarker marker;
         public int girlIndex = -1;
     }
@@ -41,10 +40,10 @@ public class GateManager : Singleton<GateManager>
     public int maxGates = 0;
 
     [Header("Avatar (optional)")]
-    public GateAvatarMarker avatarPrefab;     // prefab marker (có Canvas World Space + Image)
-    public GirlAvatarOrder girlOrder;         // list avatar theo thứ tự
+    public GateAvatarMarker avatarPrefab;     
+    public GirlAvatarOrder girlOrder;      
     public Vector3 avatarLocalOffset = new Vector3(0f, 1.2f, 0f);
-    public bool loopGirls = false;            // hết avatar thì quay vòng hay dừng?
+    public bool loopGirls = false;           
 
     int nextGirlIndex = 0;
 
@@ -71,46 +70,81 @@ public class GateManager : Singleton<GateManager>
         }
     }
 
-    public void SpawnGate()
+    public bool SpawnGate()
     {
+
+        if (RoadManager.Instance != null && !RoadManager.Instance.CanAddGateOnCurrentRoad())
+        {
+            Debug.Log("[GateManager] This road already has max 3 gates. Upgrade road to add more.");
+            return false; 
+        }
+
+        // 0) check wallet
+        if (RoseWallet.Instance == null)
+        {
+            Debug.LogWarning("[GateManager] RoseWallet is missing.");
+            return false;
+        }
+
+        // 1) tính cost và check rose
+        long cost = GateCostStore.GetNextGateCost();
+        if (RoseWallet.Instance.CurrentRose < cost)
+        {
+            Debug.Log($"[GateManager] Not enough Rose. Need {cost}, have {RoseWallet.Instance.CurrentRose}");
+            return false;
+        }
+
+        // 2) validate điều kiện spawn TRƯỚC (để tránh trừ rose rồi fail)
         if (gatePrefab == null)
         {
             Debug.LogError("[GateManager] gatePrefab is null");
-            return;
+            return false;
         }
 
         ResolveSpline();
-
         if (_currentSpline == null || _currentSpline.TotalLength <= 0f)
         {
             Debug.LogError("[GateManager] No active spline to spawn.");
-            return;
+            return false;
         }
 
         if (maxGates > 0 && _gates.Count >= maxGates)
         {
             Debug.LogWarning("[GateManager] Reached maxGates, not spawning.");
-            return;
+            return false;
         }
 
         if (!TryPickValidRatio(out float ratio))
         {
             Debug.LogWarning("[GateManager] Cannot find valid spawn ratio (too crowded).");
-            return;
+            return false;
         }
 
-        // 1) spawn gate
+        // 3) tới đây chắc chắn spawn được -> trừ rose
+        if (!RoseWallet.Instance.SpendRose(cost))
+            return false;
+
+        // 4) spawn gate
         var go = Instantiate(gatePrefab, gateRoot);
         go.name = $"{gatePrefab.name}_Gate_{_gates.Count}";
 
-        // 2) tạo entry và apply position/rotation theo ratio
         var entry = new GateEntry { go = go, ratio = ratio };
         _gates.Add(entry);
         ApplyGateByRatio(entry);
-
-        // 3) attach avatar theo thứ tự (nếu có)
         AttachAvatarMarker(entry);
+
+        RoadManager.Instance?.NotifyGateSpawnedOnCurrentRoad();
+
+        // 5) đánh dấu đã mua gate -> cost tăng ngay
+        GateCostStore.MarkGatePurchased();
+
+        // 6) refresh các hệ thống phụ thuộc gate count (nếu có)
+        GameManager.Instance?.RefreshLapPreview();
+
+        return true;
     }
+
+
 
     public void ClearAllGates()
     {

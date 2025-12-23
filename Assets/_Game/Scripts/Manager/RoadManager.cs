@@ -11,8 +11,13 @@ public class RoadManager : Singleton<RoadManager>
     [Header("Refs")]
     public HeartChainManager chain;
 
+    [Header("Rule")]
+    public int maxGatesPerRoad = 3;
+
     int _index = 0;
     readonly List<GameObject> _instances = new();
+
+    readonly Dictionary<int, int> _gateCountByRoad = new();
 
     void Awake()
     {
@@ -33,11 +38,68 @@ public class RoadManager : Singleton<RoadManager>
         StartCoroutine(SwitchRoadCR(0));
     }
 
+    public int CurrentRoadIndex => _index;
+
+    public int GetGateCountOnCurrentRoad()
+    {
+        _gateCountByRoad.TryGetValue(_index, out int c);
+        return c;
+    }
+
+    public bool CanAddGateOnCurrentRoad()
+    {
+        return GetGateCountOnCurrentRoad() < maxGatesPerRoad;
+    }
+
+    public void NotifyGateSpawnedOnCurrentRoad()
+    {
+        int c = GetGateCountOnCurrentRoad();
+        _gateCountByRoad[_index] = c + 1;
+    }
+
     public void NextRoad()
     {
         if (_instances.Count == 0) return;
-        _index = (_index + 1) % _instances.Count;
+
+        int unlocked = Mathf.Min(RoadUpgradeStore.GetUnlockedRoadCount(), _instances.Count);
+        if (unlocked <= 1)
+        {
+            return;
+        }
+
+        _index = (_index + 1) % unlocked;
         StartCoroutine(SwitchRoadCR(_index));
+    }
+
+    public bool TryUpgradeRoad()
+    {
+        if (RoseWallet.Instance == null) return false;
+
+        int unlocked = RoadUpgradeStore.GetUnlockedRoadCount();
+        if (unlocked >= _instances.Count)
+        {
+            Debug.Log("[RoadManager] All roads already unlocked.");
+            return false;
+        }
+
+        long cost = RoadUpgradeStore.GetNextUpgradeCost();
+        if (RoseWallet.Instance.CurrentRose < cost)
+        {
+            Debug.Log($"[RoadManager] Not enough Rose to upgrade road. Need {cost}");
+            return false;
+        }
+
+        if (!RoseWallet.Instance.SpendRose(cost))
+            return false;
+
+        RoadUpgradeStore.MarkUpgraded();
+
+        int newIndex = Mathf.Min(unlocked, _instances.Count - 1);
+        _index = newIndex;
+        StartCoroutine(SwitchRoadCR(_index));
+
+        Debug.Log($"[RoadManager] Upgraded road. Cost={cost}, now unlocked={RoadUpgradeStore.GetUnlockedRoadCount()}");
+        return true;
     }
 
     IEnumerator SwitchRoadCR(int idx)
@@ -62,7 +124,21 @@ public class RoadManager : Singleton<RoadManager>
         if (GateManager.Instance != null)
             GateManager.Instance.OnRoadChanged(spline);
 
-
         Debug.Log($"[RoadManager] Switched to road {idx}: {_instances[idx].name}");
     }
+
+    public int GetTotalGateCountAllRoads()
+    {
+        int sum = 0;
+        foreach (var kv in _gateCountByRoad)
+            sum += kv.Value;
+        return sum;
+    }
+
+    public int GetTotalGateCap()
+    {
+        int unlocked = RoadUpgradeStore.GetUnlockedRoadCount(); 
+        return unlocked * maxGatesPerRoad; 
+    }
+
 }

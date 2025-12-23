@@ -16,12 +16,12 @@ public class ScrollSnapToCenter : MonoBehaviour, IBeginDragHandler, IEndDragHand
 
     [Header("Optional: Update info when centered")]
     [SerializeField] private CharacterInfoPanelUI infoPanel;
-    [SerializeField] private List<CharacterThumbItemUI> itemUIs = new(); // cùng thứ tự với itemRects
+    [SerializeField] private List<CharacterThumbItemUI> itemUIs = new(); 
 
     [Header("Snap Settings")]
-    [SerializeField] private float snapDuration = 0.18f;     // 0.12 - 0.25 tuỳ cảm giác
-    [SerializeField] private float snapThreshold = 5f;       // px: nếu gần rồi thì thôi
-    [SerializeField] private bool updateWhileDragging = true; // kéo là đổi info luôn
+    [SerializeField] private float snapDuration = 0.18f;     
+    [SerializeField] private float snapThreshold = 5f;       
+    [SerializeField] private bool updateWhileDragging = true;
     [SerializeField] private bool highlightFocused = true;
 
     public System.Action<CharacterData> OnCenteredChanged;
@@ -50,8 +50,6 @@ public class ScrollSnapToCenter : MonoBehaviour, IBeginDragHandler, IEndDragHand
 
     void Start()
     {
-        // nếu bạn đã set itemUIs bằng code rồi thì sẽ gọi SetItems(...) từ ngoài
-        // còn nếu set sẵn trong inspector thì init lần đầu:
         RefreshImmediate();
     }
 
@@ -72,11 +70,6 @@ public class ScrollSnapToCenter : MonoBehaviour, IBeginDragHandler, IEndDragHand
         isDragging = false;
         SnapToClosest();
     }
-
-    /// <summary>
-    /// Gọi sau khi spawn xong.
-    /// itemUIs: list CharacterThumbItemUI theo đúng thứ tự.
-    /// </summary>
     public void SetItems(List<CharacterThumbItemUI> uis)
     {
         itemUIs = uis;
@@ -86,7 +79,7 @@ public class ScrollSnapToCenter : MonoBehaviour, IBeginDragHandler, IEndDragHand
 
         currentIndex = -1;
         RefreshImmediate();
-        SnapToClosest(); // optional: vào panel là snap luôn cho đẹp
+        SnapToClosest();
     }
 
     private void SnapToClosest()
@@ -96,7 +89,6 @@ public class ScrollSnapToCenter : MonoBehaviour, IBeginDragHandler, IEndDragHand
         int idx = FindClosestIndexToCenter();
         Vector2 target = GetAnchoredPosToCenterItem(idx);
 
-        // nếu đã gần mục tiêu thì chỉ cần update state
         if (Vector2.Distance(content.anchoredPosition, target) <= snapThreshold)
         {
             ApplyFocused(idx);
@@ -109,17 +101,15 @@ public class ScrollSnapToCenter : MonoBehaviour, IBeginDragHandler, IEndDragHand
 
     private IEnumerator SnapCoroutine(Vector2 targetAnchoredPos, int targetIndex)
     {
-        // dập inertia để không “trôi”
         scrollRect.velocity = Vector2.zero;
 
         Vector2 start = content.anchoredPosition;
         float t = 0f;
 
-        // ease out
         while (t < 1f)
         {
             t += Time.unscaledDeltaTime / Mathf.Max(0.001f, snapDuration);
-            float eased = 1f - Mathf.Pow(1f - t, 3f); // cubic ease out
+            float eased = 1f - Mathf.Pow(1f - t, 3f);
             content.anchoredPosition = Vector2.LerpUnclamped(start, targetAnchoredPos, eased);
             yield return null;
         }
@@ -168,19 +158,14 @@ public class ScrollSnapToCenter : MonoBehaviour, IBeginDragHandler, IEndDragHand
         return bestIdx;
     }
 
-    /// <summary>
-    /// Tính anchoredPosition cần thiết để đưa item target vào đúng giữa viewport.
-    /// </summary>
     private Vector2 GetAnchoredPosToCenterItem(int idx)
     {
         Vector3 viewportCenterWorld = viewport.TransformPoint(viewport.rect.center);
         Vector3 itemCenterWorld = itemRects[idx].TransformPoint(itemRects[idx].rect.center);
 
-        // chuyển chênh lệch world -> local của content
         Vector3 deltaWorld = viewportCenterWorld - itemCenterWorld;
         Vector3 deltaLocal = content.InverseTransformVector(deltaWorld);
 
-        // content.anchoredPosition dùng local XY
         return content.anchoredPosition + new Vector2(deltaLocal.x, 0f);
     }
 
@@ -189,7 +174,6 @@ public class ScrollSnapToCenter : MonoBehaviour, IBeginDragHandler, IEndDragHand
         if (idx == currentIndex) return;
         currentIndex = idx;
 
-        // Update info panel
         if (infoPanel != null && itemUIs != null && idx >= 0 && idx < itemUIs.Count)
             infoPanel.Show(itemUIs[idx].Data);
 
@@ -198,7 +182,6 @@ public class ScrollSnapToCenter : MonoBehaviour, IBeginDragHandler, IEndDragHand
             OnCenteredChanged?.Invoke(itemUIs[idx].Data);
         }
 
-        // Highlight
         if (highlightFocused && itemUIs != null)
         {
             for (int i = 0; i < itemUIs.Count; i++)
