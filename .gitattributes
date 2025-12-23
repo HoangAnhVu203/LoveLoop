@@ -1,0 +1,12 @@
+# Normalize line endings for Unity projects
+* text=auto eol=lf
+
+# Unity YAML files
+*.cs text eol=lf
+*.shader text eol=lf
+*.compute text eol=lf
+*.cginc text eol=lf
+*.asset text eol=lf
+*.prefab text eol=lf
+*.unity text eol=lf
+*.meta text eol=lf
