@@ -5,9 +5,8 @@ using UnityEngine;
 public class CharacterPhotoEntry
 {
     public string photoId;
-
     public Sprite photo;
+    public Sprite lockedPhoto;
     [TextArea(2, 4)] public string comment;
-
     public int requiredLevel;
 }

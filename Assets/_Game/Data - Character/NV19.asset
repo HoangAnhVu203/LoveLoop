@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d824474ab80f2482f8e0d7fc33a93878, type: 3}
+  m_Name: NV19
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterData
+  characterId: char_19
+  characterName: Myra
+  avatar: {fileID: 21300000, guid: 6a3ccaf5505554682bcb81e5a64d2be0, type: 3}
+  description: Warm-hearted, Confident,  Graceful, Charismatic
+  level: 1
+  levelUpCost: 0
+  revenueMultiplier: 0.1
+  photos:
+  - photoId: p0
+    photo: {fileID: 21300000, guid: a1d4939ac364c4a1eb2ac58a2348fa05, type: 3}
+    lockedPhoto: {fileID: 21300000, guid: 0e560657425c549b5be0bae1c0dd7266, type: 3}
+    comment: "I can\u2019t ignore how much I want you."
+    requiredLevel: 4
+  - photoId: p1
+    photo: {fileID: 21300000, guid: 3bdebb5588d3f40c7becaff59fdcf286, type: 3}
+    lockedPhoto: {fileID: 21300000, guid: c39500bbcdffe43739bef2df6c722b35, type: 3}
+    comment: "I\u2019m enjoying wanting you."
+    requiredLevel: 6
+  - photoId: p2
+    photo: {fileID: 21300000, guid: 36bfe10fcbb904128800541783b83010, type: 3}
+    lockedPhoto: {fileID: 21300000, guid: 26ef2386f4f5c42bdbb634dddb814210, type: 3}
+    comment: "You\u2019re making this very tempting."
+    requiredLevel: 8
+  - photoId: p3
+    photo: {fileID: 21300000, guid: f3edd0c614ea24c80b0f9283fae8a32e, type: 3}
+    lockedPhoto: {fileID: 21300000, guid: 2d0925f7f632d4d6799c53bd216f97b5, type: 3}
+    comment: "You\u2019re pulling me in."
+    requiredLevel: 10

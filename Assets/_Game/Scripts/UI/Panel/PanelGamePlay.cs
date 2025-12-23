@@ -1,42 +1,87 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class PanelGamePlay : UICanvas
 {
     [Header("UI")]
-    [SerializeField] GameObject mergeButtonGO;   
+    [SerializeField] GameObject mergeButtonGO;
+    [SerializeField] Text moneyText;
+
+    [Header("Cost UI")]
+    [SerializeField] TMP_Text addCostText;
+    [SerializeField] TMP_Text mergeCostText;
+    [SerializeField] string costPrefix = "$ ";
+
+    [Header("Heart Cap UI")]
+    [SerializeField] TMP_Text heartCapText;
+    private string capFormat = "{0}/{1}";
     private float checkInterval = 0.15f;
+
+    [Header("Lap Money UI")]
+    [SerializeField] Text lapMoneyText;
 
     HeartChainManager _chain;
     float _nextCheckTime;
     bool _lastCanMerge;
 
+    [Header("Boost")]
     public Button boostBtn;
     public Text labelText;
     private string normalText = "Boost Update";
     private string maxText = "Boost Max LV";
 
-    [Header("UI")]
+    [Header("Add Heart Icon")]
     public Image iconImage;
 
-
     [Header("Visual when disabled")]
-    public Color disabledColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+    private Color disabledColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+
+    [Header("Merge Preview UI")]
+    [SerializeField] Image mergeFromIcon;
+    [SerializeField] Image mergeToIcon;
+
+    [SerializeField] TMP_Text roseText;
+
 
     Image _btnImage;
 
     void Awake()
     {
-        if (boostBtn == null) boostBtn = GetComponent<Button>();
-        _btnImage = boostBtn.GetComponent<Image>();
         _chain = FindObjectOfType<HeartChainManager>();
+        if (boostBtn != null) _btnImage = boostBtn.GetComponent<Image>();
     }
-    
+
     void OnEnable()
     {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnHeartCapChanged += RefreshHeartCapUI;
+            GameManager.Instance.OnLapPreviewChanged += UpdateLapMoneyUI;
+            GameManager.Instance.OnLapCompleted += ShowLapCompletedUI;
+
+            UpdateLapMoneyUI(GameManager.Instance.GetLapPreviewMoney());
+        }
+        if (RoseWallet.Instance != null && roseText != null)
+            RoseWallet.Instance.BindRoseText(roseText);
+
+
+        if (PlayerMoney.Instance != null && moneyText != null)
+            PlayerMoney.Instance.BindMoneyText(moneyText);
+
         Refresh();
         ForceRefreshMergeButton();
         RefreshState();
+    }
+
+    void OnDisable()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnHeartCapChanged -= RefreshHeartCapUI;
+            GameManager.Instance.OnLapPreviewChanged -= UpdateLapMoneyUI;
+            GameManager.Instance.OnLapCompleted -= ShowLapCompletedUI;
+        }
     }
 
     void Update()
@@ -44,13 +89,16 @@ public class PanelGamePlay : UICanvas
         if (Time.time < _nextCheckTime) return;
         _nextCheckTime = Time.time + checkInterval;
 
+        if (_chain == null) _chain = FindObjectOfType<HeartChainManager>();
         RefreshMergeButtonIfNeeded();
     }
 
+    // ================= MERGE BUTTON =================
+
     void ForceRefreshMergeButton()
     {
+        RefreshMergePreviewUI();
         _lastCanMerge = CanMergeTriple();
-        if (mergeButtonGO != null) mergeButtonGO.SetActive(_lastCanMerge);
     }
 
     void RefreshMergeButtonIfNeeded()
@@ -59,7 +107,7 @@ public class PanelGamePlay : UICanvas
         if (canMerge == _lastCanMerge) return;
 
         _lastCanMerge = canMerge;
-        if (mergeButtonGO != null) mergeButtonGO.SetActive(canMerge);
+        RefreshMergePreviewUI();
     }
 
     bool CanMergeTriple()
@@ -77,123 +125,196 @@ public class PanelGamePlay : UICanvas
             var c = list[i + 2] ? list[i + 2].GetComponent<HeartStats>() : null;
 
             if (a == null || b == null || c == null) continue;
-
-            if (a.type == b.type && b.type == c.type)
-                return true;
+            if (a.type == b.type && b.type == c.type) return true;
         }
         return false;
     }
 
-    
+    // ================= BOOST =================
+
     public void OnClickUpgradeDrain()
     {
-        var chain = FindObjectOfType<HeartChainManager>();
-        if (chain == null || chain.GetLeader() == null) return;
+        if (_chain == null) _chain = FindObjectOfType<HeartChainManager>();
+        if (_chain == null || _chain.GetLeader() == null) return;
 
-        var energy = chain.GetLeader().GetComponent<HeartWithEnergy>();
+        var energy = _chain.GetLeader().GetComponent<HeartWithEnergy>();
         if (energy == null) return;
 
         bool success = energy.TryUpgradeDrain();
-        if (!success)
-        {
-            SetMaxState();
-            return;
-        }
+        if (!success) { SetMaxState(); return; }
 
         RefreshState();
     }
 
     void RefreshState()
     {
-        var chain = FindObjectOfType<HeartChainManager>();
-        if (chain == null || chain.GetLeader() == null) return;
+        if (_chain == null) _chain = FindObjectOfType<HeartChainManager>();
+        if (_chain == null || _chain.GetLeader() == null) return;
 
-        var energy = chain.GetLeader().GetComponent<HeartWithEnergy>();
+        var energy = _chain.GetLeader().GetComponent<HeartWithEnergy>();
         if (energy == null) return;
 
-        if (energy.IsDrainUpgradeMaxed())
-            SetMaxState();
-        else
-            SetNormalState();
+        if (energy.IsDrainUpgradeMaxed()) SetMaxState();
+        else SetNormalState();
     }
 
     void SetNormalState()
     {
-        if (labelText != null)
-            labelText.text = normalText;
+        if (labelText != null) labelText.text = normalText;
 
         if (boostBtn != null)
+        {
             boostBtn.interactable = true;
+            if (_btnImage != null) _btnImage.color = Color.white;
+        }
     }
 
     void SetMaxState()
     {
-        if (labelText != null)
-            labelText.text = maxText;
+        if (labelText != null) labelText.text = maxText;
 
-        if (boostBtn != null)
-            boostBtn.interactable = false;
-
-        if (_btnImage != null)
-            _btnImage.color = disabledColor;
+        if (boostBtn != null) boostBtn.interactable = false;
+        if (_btnImage != null) _btnImage.color = disabledColor;
     }
+
+    // ================= LAP UI =================
+
+    void UpdateLapMoneyUI(long value)
+    {
+        if (lapMoneyText == null) return;
+        lapMoneyText.text = "+" + MoneyFormatter.Format(value) + "/LAP";
+    }
+
+    void ShowLapCompletedUI(long total)
+    {
+        Debug.Log($"[LAP] Completed. Earned = {total}");
+    }
+
+    // ================= MAIN REFRESH =================
 
     public void Refresh()
     {
-        if (HeartManager.Instance == null)
+        RefreshAddHeartIcon();
+        RefreshHeartCapUI();
+        RefreshCostUI();
+
+        GameManager.Instance?.RefreshLapPreview();
+    }
+
+    void RefreshCostUI()
+    {
+        if (addCostText != null)
         {
-            
-            return;
+            long addCost = ActionCostStore.GetAddCost();
+            addCostText.text = costPrefix + MoneyFormatter.Format(addCost);
         }
 
-        int level = HeartManager.Instance.GetAddableHeartLevel();
+        if (mergeCostText != null)
+        {
+            long mergeCost = ActionCostStore.GetMergeCost();
+            mergeCostText.text = costPrefix + MoneyFormatter.Format(mergeCost);
+        }
+    }
 
+    void RefreshAddHeartIcon()
+    {
+        if (HeartManager.Instance == null || iconImage == null) return;
+
+        int level = HeartManager.Instance.GetAddableHeartLevel();
         int index = level - 1;
+
         if (index < 0 || index >= HeartManager.Instance.heartPrefabsByLevel.Count)
         {
-            
-            return; 
+            iconImage.enabled = false;
+            return;
         }
 
         GameObject prefab = HeartManager.Instance.heartPrefabsByLevel[index];
-        if (prefab == null)
-        {
-            
-            return;
-        }
+        if (prefab == null) { iconImage.enabled = false; return; }
 
         HeartStats stats = prefab.GetComponent<HeartStats>();
-        if (stats == null || stats.icon == null)
-        {
-            
-            return;
-        }
+        if (stats == null || stats.icon == null) { iconImage.enabled = false; return; }
 
         iconImage.sprite = stats.icon;
         iconImage.enabled = true;
     }
 
+    void RefreshHeartCapUI()
+    {
+        if (heartCapText == null) return;
+
+        if (_chain == null) _chain = FindObjectOfType<HeartChainManager>();
+
+        int current = (_chain != null && _chain.hearts != null) ? _chain.hearts.Count : 0;
+        int max = (GameManager.Instance != null) ? GameManager.Instance.MaxHearts : current;
+
+        heartCapText.text = string.Format(capFormat, current, max);
+    }
+
+    void RefreshMergePreviewUI()
+    {
+        if (HeartManager.Instance == null) return;
+
+        HeartManager.MergePreview p;
+        bool can = HeartManager.Instance.TryGetMergePreview(out p);
+
+        if (mergeButtonGO != null) mergeButtonGO.SetActive(can);
+
+        if (mergeCostText != null)
+            mergeCostText.gameObject.SetActive(can);
+
+        if (!can)
+        {
+            if (mergeFromIcon != null) mergeFromIcon.enabled = false;
+            if (mergeToIcon != null) mergeToIcon.enabled = false;
+            return;
+        }
+
+        if (mergeFromIcon != null)
+        {
+            mergeFromIcon.sprite = p.tripleIcon;
+            mergeFromIcon.enabled = (p.tripleIcon != null);
+        }
+
+        if (mergeToIcon != null)
+        {
+            mergeToIcon.sprite = p.resultIcon;
+            mergeToIcon.enabled = (p.resultIcon != null);
+        }
+    }
+
+    // ================= BUTTON EVENTS =================
 
     public void AddHeartBTN()
     {
+        GameManager.Instance?.RefreshLapPreview();
+
         HeartManager.Instance.AddHeart();
+        Refresh();
         ForceRefreshMergeButton();
     }
 
     public void MergeHeartBTN()
     {
+        GameManager.Instance?.RefreshLapPreview();
+
         HeartManager.Instance.MergeAnyTriple();
+        Refresh();
         ForceRefreshMergeButton();
+    }
+
+    public void AddGateBTN()
+    {
+        GameManager.Instance?.RefreshLapPreview();
+
+        GateManager.Instance?.SpawnGate();
+
+        GameManager.Instance?.RefreshLapPreview();
     }
 
     public void NextRoadBTN()
     {
         RoadManager.Instance?.NextRoad();
-    }
-    
-    public void AddGateBTN()
-    {
-        GateManager.Instance?.SpawnGate();
     }
 
     public void OpenFlirtBookBTN()

@@ -4,31 +4,27 @@ using UnityEngine.UI;
 
 public class FlirtBookPanel : UICanvas
 {
+    [Header("List")]
     [SerializeField] RectTransform content;
     [SerializeField] CharacterThumbItemUI thumbPrefab;
     [SerializeField] List<CharacterData> characters;
     [SerializeField] ScrollSnapToCenter centerSelector;
 
-    //[Header("Buttons")]
-    //[SerializeField] Button levelUpBtn;
-
     [Header("UI Detail")]
     [SerializeField] CharacterInfoPanelUI infoPanel;
 
+    [Header("Photo Button (Lock at Lv4)")]
     [SerializeField] Button cameraBtn;
+    [SerializeField] CanvasGroup cameraBtnGroup;
+    [SerializeField, Range(0f, 1f)] float lockedAlpha = 0.4f;
+    [SerializeField, Range(0f, 1f)] float unlockedAlpha = 1f;
+    [SerializeField] int photoUnlockLevel = 4;
 
     CharacterData currentCharacter;
 
     void Start()
     {
         Build();
-
-        //if (levelUpBtn != null)
-        //{
-        //    levelUpBtn.onClick.RemoveAllListeners();
-        //    levelUpBtn.onClick.AddListener(OnLevelUpClicked);
-        //}
-
         RefreshCurrentUI();
     }
 
@@ -65,19 +61,26 @@ public class FlirtBookPanel : UICanvas
         if (infoPanel != null)
             infoPanel.Show(currentCharacter);
 
-        RefreshLevelUpButtonState();
+        RefreshPhotoButtonState();
     }
 
-    void RefreshLevelUpButtonState()
+    void RefreshPhotoButtonState()
     {
-        //if (levelUpBtn == null || currentCharacter == null) return;
+        if (currentCharacter == null) return;
 
-        bool canUp = CharacterProgressStore.CanLevelUp(
-            currentCharacter.characterId,
-            currentCharacter.level <= 0 ? 1 : currentCharacter.level
-        );
+        int defaultLv = currentCharacter.level <= 0 ? 1 : currentCharacter.level;
+        int lv = CharacterProgressStore.GetLevel(currentCharacter.characterId, defaultLv);
 
-        //levelUpBtn.interactable = canUp;
+        bool unlocked = lv >= photoUnlockLevel;
+
+        if (cameraBtn != null)
+            cameraBtn.interactable = unlocked;
+        if (cameraBtnGroup != null)
+        {
+            cameraBtnGroup.alpha = unlocked ? unlockedAlpha : lockedAlpha;
+            cameraBtnGroup.interactable = unlocked;
+            cameraBtnGroup.blocksRaycasts = unlocked;
+        }
     }
 
     public void OnLevelUpClicked()
@@ -88,39 +91,37 @@ public class FlirtBookPanel : UICanvas
         int currentLv = CharacterProgressStore.GetLevel(currentCharacter.characterId, defaultLv);
 
         if (currentLv >= CharacterProgressStore.MAX_LEVEL)
-        {
-            RefreshLevelUpButtonState();
             return;
-        }
-
-        // TODO: CHECK COST + TRỪ TIỀN 
-        // long cost = currentCharacter.levelUpCost;  cost theo LV
-        // if (PlayerMoney.Instance.money < cost) return;
-        // PlayerMoney.Instance.Spend(cost);
 
         int newLv = CharacterProgressStore.LevelUp(currentCharacter.characterId, defaultLv);
 
         if (infoPanel != null) infoPanel.Refresh();
-        RefreshLevelUpButtonState();
+
+        RefreshPhotoButtonState();
 
         Debug.Log($"[LevelUp] {currentCharacter.characterId} -> LEVEL {newLv}");
     }
 
-    public void CloseBTN()
-    {
-        UIManager.Instance.CloseUIDirectly<FlirtBookPanel>();
-    }
-
     public void OpenPhotoBookBTN()
     {
-        if (currentCharacter == null)
+        if (currentCharacter == null) return;
+
+        int defaultLv = currentCharacter.level <= 0 ? 1 : currentCharacter.level;
+        int lv = CharacterProgressStore.GetLevel(currentCharacter.characterId, defaultLv);
+
+        if (lv < photoUnlockLevel)
         {
-            Debug.LogError("currentCharacter == null");
+            Debug.Log($"Photo locked: Reach level {photoUnlockLevel} to unlock.");
             return;
         }
 
         var panel = UIManager.Instance.OpenUI<PhotoViewerPanelUI>();
         panel.Show(currentCharacter);
+    }
+
+    public void CloseBTN()
+    {
+        UIManager.Instance.CloseUIDirectly<FlirtBookPanel>();
     }
 
     public void OnDimClick()

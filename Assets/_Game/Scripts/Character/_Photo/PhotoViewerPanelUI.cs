@@ -80,16 +80,25 @@ public class PhotoViewerPanelUI : UICanvas
 
         thumbs.Clear();
 
+        int defaultLv = current.level <= 0 ? 1 : current.level;
+        int lv = CharacterProgressStore.GetLevel(currentCharacterId, defaultLv);
+
         for (int i = 0; i < current.photos.Count; i++)
         {
             var entry = current.photos[i];
-            if (entry == null || entry.photo == null) continue;
+            if (entry == null) continue;
 
-            var t = Instantiate(thumbPrefab);
-            t.transform.SetParent(content, false);
+            bool unlocked = lv >= entry.requiredLevel;
+
+            Sprite spriteToShow = unlocked ? entry.photo : entry.lockedPhoto;
+
+            if (spriteToShow == null)
+                continue; 
+
+            var t = Instantiate(thumbPrefab, content, false);
 
             int idx = i;
-            t.Bind(entry.photo, idx, Select);
+            t.Bind(spriteToShow, idx, unlocked, Select);  
             thumbs.Add(t);
         }
 
@@ -97,16 +106,28 @@ public class PhotoViewerPanelUI : UICanvas
         LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)content);
     }
 
+
     void Select(int index)
     {
         if (index < 0 || index >= current.photos.Count) return;
 
-        currentIndex = index;
+        int defaultLv = current.level <= 0 ? 1 : current.level;
+        int lv = CharacterProgressStore.GetLevel(currentCharacterId, defaultLv);
 
         var entry = current.photos[index];
+        if (entry == null) return;
+
+        bool unlocked = lv >= entry.requiredLevel;
+        if (!unlocked)
+        {
+            return;
+        }
+
+        currentIndex = index;
 
         mainImage.sprite = entry.photo;
         commentText.text = entry.comment;
+
         bool liked = PhotoLikeStore.IsLiked(currentCharacterId, entry.photoId);
         UpdateLikeUI(liked);
     }

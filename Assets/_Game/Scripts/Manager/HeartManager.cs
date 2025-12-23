@@ -22,13 +22,19 @@ public class HeartManager : MonoBehaviour
     [Tooltip("Tên Layer dùng cho HeartPink ")]
     public string pinkLayerName = "HeartPink";
 
+    public struct MergePreview
+    {
+        public bool canMerge;
+        public HeartType tripleType;
+        public GameObject resultPrefab;
+
+        public Sprite tripleIcon;
+        public Sprite resultIcon;
+    }
+
     void Awake()
     {
         Instance = this;
-    }
-
-    void Update()
-    {
     }
 
     void Start()
@@ -48,10 +54,26 @@ public class HeartManager : MonoBehaviour
         }
     }
 
+    // ===================== ADD HEART =====================
+
     public void AddHeart()
     {
+        if (!CanAddHeart())
+        {
+            Debug.Log("[AddHeart] Reached heart cap. Cannot add more.");
+            return;
+        }
+
+        long cost = ActionCostStore.GetAddCost();
+        if (PlayerMoney.Instance == null || !PlayerMoney.Instance.TrySpend(cost))
+        {
+            Debug.Log($"[AddHeart] Not enough money. Need ${cost}");
+            return;
+        }
+
         var manager = HeartChainManagerInstance;
-        if (manager == null || manager.hearts.Count == 0) return;
+        if (manager == null || manager.hearts.Count == 0)
+            return;
 
         Transform last = manager.hearts[manager.hearts.Count - 1];
         if (last == null) return;
@@ -67,13 +89,7 @@ public class HeartManager : MonoBehaviour
 
         GameObject prefab = heartPrefabsByLevel[index];
 
-        GameObject newHeart = Instantiate(
-            prefab,
-            last.position,
-            last.rotation,
-            spawnParent
-        );
-
+        GameObject newHeart = Instantiate(prefab, last.position, last.rotation, spawnParent);
         newHeart.transform.localScale = last.localScale;
 
         var energy = newHeart.GetComponent<HeartWithEnergy>();
@@ -83,9 +99,18 @@ public class HeartManager : MonoBehaviour
         manager.RecalculateLeaderByWeight();
         manager.EnsureEnergyOnLeaderOnly();
 
-        Debug.Log($"[AddHeart] Spawn heart level {spawnLevel}");
+        Debug.Log($"[AddHeart] Spawn heart level {spawnLevel} (cost={cost})");
+
+        ActionCostStore.IncreaseAddCost();
+
+        var panel = FindObjectOfType<PanelGamePlay>(true);
+        if (panel != null) panel.Refresh();
+
+        RoseWallet.Instance?.AddRose(1);
+
     }
 
+    // ===================== FIND MERGE TRIPLE =====================
 
     int FindFirstMergeTripleIndex(out HeartType foundType)
     {
@@ -115,12 +140,9 @@ public class HeartManager : MonoBehaviour
         return -1;
     }
 
-    HeartChainManager HeartChainManagerInstance
-    {
-        get { return FindObjectOfType<HeartChainManager>(); }
-    }
+    HeartChainManager HeartChainManagerInstance => FindObjectOfType<HeartChainManager>();
 
-    // ======== MERGE ANY TRIPLE ========
+    // ===================== MERGE =====================
 
     public void MergeAnyTriple()
     {
@@ -137,12 +159,19 @@ public class HeartManager : MonoBehaviour
             return;
         }
 
-        // 1. Tìm cụm 3 liên tiếp cùng loại
+        // 1) Tìm cụm 3 liên tiếp
         HeartType tripleType;
         int startIndex = FindFirstMergeTripleIndex(out tripleType);
         if (startIndex < 0)
         {
             Debug.Log("[Merge] Không có cụm 3 heart liên tiếp cùng loại.");
+            return;
+        }
+
+        long cost = ActionCostStore.GetMergeCost();
+        if (PlayerMoney.Instance == null || !PlayerMoney.Instance.TrySpend(cost))
+        {
+            Debug.Log($"[Merge] Not enough money. Need ${cost}");
             return;
         }
 
@@ -167,56 +196,46 @@ public class HeartManager : MonoBehaviour
 
         long oldMoney = stats.moneyValue;
 
-
-        // 2. Vị trí spawn = trung bình 3 tim
+        // 2) spawnPos
         Vector3 spawnPos = (h0.position + h1.position + h2.position) / 3f;
         Quaternion spawnRot = h1.rotation;
 
-        // 3. Xoá 3 tim khỏi list & scene (từ index lớn về nhỏ)
-        // NOTE: remove khỏi list trước để tránh logic khác đọc nhầm
+        // 3) remove 3 tim
         for (int i = startIndex + 2; i >= startIndex; i--)
         {
             Transform h = list[i];
             list.RemoveAt(i);
-            if (h != null)
-                Destroy(h.gameObject);
+            if (h != null) Destroy(h.gameObject);
         }
 
-        // 4. Tạo tim mới
-        GameObject newHeart = Instantiate(
-            stats.mergeResultPrefab,
-            spawnPos,
-            spawnRot,
-            spawnParent
-        );
-
+        // 4) tạo tim mới
+        GameObject newHeart = Instantiate(stats.mergeResultPrefab, spawnPos, spawnRot, spawnParent);
         newHeart.transform.localScale = h1.localScale;
 
         var newStats = newHeart.GetComponent<HeartStats>();
 
-        HeartUnlocks.Instance.TryUpdateMaxLevel(newStats.level);
+        if (HeartUnlocks.Instance != null && newStats != null)
+            HeartUnlocks.Instance.TryUpdateMaxLevel(newStats.level);
 
         var panel = FindObjectOfType<PanelGamePlay>(true);
-        if (panel != null)
-            panel.Refresh();
+        if (panel != null) panel.Refresh();
 
-        // 5. KHÔNG tự quyết Energy ở đây (để chain quyết sau khi recalc)
         var energy = newHeart.GetComponent<HeartWithEnergy>();
         if (energy != null) energy.enabled = false;
 
-        // 6. Thêm tim mới vào chuỗi tại vị trí startIndex
+        // 6) insert vào chain
         list.Insert(startIndex, newHeart.transform);
+        RoseWallet.Instance?.AddRose(1);
 
-        Debug.Log($"[Merge] Merge 3 {tripleType} tại index {startIndex} → {stats.mergeResultPrefab.name}");
 
-        // 7. Recalc leader + đảm bảo energy đúng
+        Debug.Log($"[Merge] Merge 3 {tripleType} -> {stats.mergeResultPrefab.name} (cost={cost})");
+
+        // 7) recalc
         chain.RecalculateLeaderByWeight();
         chain.EnsureEnergyOnLeaderOnly();
-
-        // 8. Reset history + snap để node nối ngay, không bị đứng/khựng
-        //chain.RebuildHistoryByChainSegments();
-        //chain.SnapAllHeartsToHistory();
         chain.SnapChainImmediate();
+
+        ActionCostStore.IncreaseMergeCost();
 
         if (newStats != null && HeartUnlocks.Instance != null)
         {
@@ -224,32 +243,29 @@ public class HeartManager : MonoBehaviour
             {
                 HeartUnlocks.Instance.MarkUnlocked(newStats.type);
 
-                var panels = UIManager.Instance.OpenUI<PanelNewHeart>();
+                if (GameManager.Instance != null)
+                    GameManager.Instance.OnUnlockedNewHeartType();
 
+                var panels = UIManager.Instance.OpenUI<PanelNewHeart>();
                 Sprite icon = newStats.icon;
                 panels.Show(icon, newStats.level, oldMoney, newStats.moneyValue);
             }
         }
-
     }
 
-    // ======== Helper lấy leader / last từ ChainManager ========
+    // ===================== HELPERS =====================
 
     public Transform GetLastHeart()
     {
         var chain = HeartChainManagerInstance;
-        if (chain == null || chain.hearts.Count == 0)
-            return null;
-
+        if (chain == null || chain.hearts.Count == 0) return null;
         return chain.hearts[chain.hearts.Count - 1];
     }
 
     public Transform GetLeader()
     {
         var chain = HeartChainManagerInstance;
-        if (chain == null || chain.hearts.Count == 0)
-            return null;
-
+        if (chain == null || chain.hearts.Count == 0) return null;
         return chain.hearts[0];
     }
 
@@ -281,13 +297,87 @@ public class HeartManager : MonoBehaviour
                 lowestLevelInChain = stats.level;
         }
 
-        // Nếu còn heart thấp hơn level addable max → add heart đó
         if (lowestLevelInChain < maxAddable)
             return lowestLevelInChain;
 
-        // Nếu tất cả >= maxAddable → add maxAddable
         return maxAddable;
     }
 
+    int GetCurrentHeartCount()
+    {
+        var chain = HeartChainManagerInstance;
+        if (chain == null || chain.hearts == null) return 0;
+        return chain.hearts.Count;
+    }
 
+    bool CanAddHeart()
+    {
+        if (GameManager.Instance == null) return true;
+        return GetCurrentHeartCount() < GameManager.Instance.MaxHearts;
+    }
+
+    // ===================== MERGE PREVIEW =====================
+
+    public bool TryGetMergePreview(out MergePreview preview)
+    {
+        preview = default;
+
+        var chain = HeartChainManagerInstance;
+        if (chain == null || chain.hearts == null) return false;
+
+        var list = chain.hearts;
+        int n = list.Count;
+        if (n < 3) return false;
+
+        HeartType tripleType;
+        int startIndex = FindFirstMergeTripleIndex(out tripleType);
+        if (startIndex < 0) return false;
+
+        var h0 = list[startIndex];
+        if (h0 == null) return false;
+
+        var s0 = h0.GetComponent<HeartStats>();
+        if (s0 == null) return false;
+
+        GameObject resultPrefab = s0.mergeResultPrefab;
+        if (resultPrefab == null) return false;
+
+        Sprite tripleIcon = s0.icon;
+        if (tripleIcon == null) tripleIcon = GetIconFromPrefabFallback(s0);
+
+        Sprite resultIcon = null;
+        var resultStats = resultPrefab.GetComponent<HeartStats>();
+        if (resultStats != null) resultIcon = resultStats.icon;
+        if (resultIcon == null && resultStats != null) resultIcon = GetIconFromPrefabFallback(resultStats);
+
+        preview = new MergePreview
+        {
+            canMerge = true,
+            tripleType = tripleType,
+            resultPrefab = resultPrefab,
+            tripleIcon = tripleIcon,
+            resultIcon = resultIcon
+        };
+
+        return true;
+    }
+
+    Sprite GetIconFromPrefabFallback(HeartStats stats)
+    {
+        if (stats == null) return null;
+
+        int level = stats.level;
+        int index = level - 1;
+
+        if (heartPrefabsByLevel == null) return null;
+        if (index < 0 || index >= heartPrefabsByLevel.Count) return null;
+
+        var prefab = heartPrefabsByLevel[index];
+        if (prefab == null) return null;
+
+        var prefabStats = prefab.GetComponent<HeartStats>();
+        if (prefabStats == null) return null;
+
+        return prefabStats.icon;
+    }
 }

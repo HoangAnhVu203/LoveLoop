@@ -1,15 +1,11 @@
 using UnityEngine;
-using TMPro;
 using UnityEngine.UI;
 
 public class PlayerMoney : MonoBehaviour
 {
     public static PlayerMoney Instance { get; private set; }
 
-    [Header("UI")]
-    public Text moneyText;
-
-    [Header("Money Settings")]
+    Text moneyText;
     public long currentMoney = 0;
 
     void Awake()
@@ -20,10 +16,12 @@ public class PlayerMoney : MonoBehaviour
             return;
         }
         Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
-    void Start()
+    public void BindMoneyText(Text txt)
     {
+        moneyText = txt;
         UpdateUI();
     }
 
@@ -34,10 +32,19 @@ public class PlayerMoney : MonoBehaviour
         UpdateUI();
     }
 
+    public bool TrySpend(long amount)
+    {
+        if (amount <= 0) return true;
+        if (currentMoney < amount) return false;
+
+        currentMoney -= amount;
+        UpdateUI();
+        return true;
+    }
+
     void UpdateUI()
     {
         if (moneyText != null)
-            moneyText.text = "$ " + currentMoney.ToString("N0");
+            moneyText.text = "$ " + MoneyFormatter.Format(currentMoney);
     }
-
 }

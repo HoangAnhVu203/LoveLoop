@@ -971,6 +971,7 @@ GameObject:
   - component: {fileID: 6075829756713068392}
   - component: {fileID: 5850055576820177556}
   - component: {fileID: 420973968073827426}
+  - component: {fileID: 4697265236797281395}
   m_Layer: 5
   m_Name: Button - Photo
   m_TagString: Untagged
@@ -1092,6 +1093,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!225 &4697265236797281395
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5282559846388892433}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &6857991859286468169
 GameObject:
   m_ObjectHideFlags: 0
@@ -1422,6 +1435,10 @@ MonoBehaviour:
   centerSelector: {fileID: 7858050935282082779}
   infoPanel: {fileID: 6895077740685176857}
   cameraBtn: {fileID: 420973968073827426}
+  cameraBtnGroup: {fileID: 4697265236797281395}
+  lockedAlpha: 0.4
+  unlockedAlpha: 1
+  photoUnlockLevel: 4
 --- !u!1 &9103293655676196087
 GameObject:
   m_ObjectHideFlags: 0
