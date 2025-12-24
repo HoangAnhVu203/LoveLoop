@@ -211,7 +211,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: YOU HAVE A NEW HEART !
+  m_Text: YOU GOT A NEW HEART !
 --- !u!114 &8879561509778092750
 MonoBehaviour:
   m_ObjectHideFlags: 0

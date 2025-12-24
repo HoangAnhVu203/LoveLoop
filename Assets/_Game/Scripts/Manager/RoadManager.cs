@@ -36,6 +36,8 @@ public class RoadManager : Singleton<RoadManager>
         }
 
         StartCoroutine(SwitchRoadCR(0));
+        IsReady = true;
+
     }
 
     public int CurrentRoadIndex => _index;
@@ -99,6 +101,7 @@ public class RoadManager : Singleton<RoadManager>
         StartCoroutine(SwitchRoadCR(_index));
 
         Debug.Log($"[RoadManager] Upgraded road. Cost={cost}, now unlocked={RoadUpgradeStore.GetUnlockedRoadCount()}");
+        GameSaveManager.Instance?.RequestSave();
         return true;
     }
 
@@ -125,6 +128,7 @@ public class RoadManager : Singleton<RoadManager>
             GateManager.Instance.OnRoadChanged(spline);
 
         Debug.Log($"[RoadManager] Switched to road {idx}: {_instances[idx].name}");
+        GameSaveManager.Instance?.RequestSave();
     }
 
     public int GetTotalGateCountAllRoads()
@@ -140,5 +144,36 @@ public class RoadManager : Singleton<RoadManager>
         int unlocked = RoadUpgradeStore.GetUnlockedRoadCount(); 
         return unlocked * maxGatesPerRoad; 
     }
+
+    public bool IsReady { get; private set; }
+
+    public Dictionary<int, int> ExportRoadGateCounts()
+    {
+        return new Dictionary<int, int>(_gateCountByRoad);
+    }
+
+    public void ImportRoadGateCounts(System.Collections.Generic.List<RoadGateCountSave> list)
+    {
+        _gateCountByRoad.Clear();
+        if (list == null) return;
+
+        for (int i = 0; i < list.Count; i++)
+            _gateCountByRoad[list[i].roadIndex] = Mathf.Max(0, list[i].count);
+    }
+
+    public void SwitchToRoadImmediate(int idx)
+    {
+        if (_instances.Count == 0) return;
+
+        int unlocked = Mathf.Min(RoadUpgradeStore.GetUnlockedRoadCount(), _instances.Count);
+        idx = Mathf.Clamp(idx, 0, Mathf.Max(0, unlocked - 1));
+
+        _index = idx;
+        StopAllCoroutines();
+        StartCoroutine(SwitchRoadCR(_index));
+    }
+
+
+    
 
 }

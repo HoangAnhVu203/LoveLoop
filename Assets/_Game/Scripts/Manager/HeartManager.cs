@@ -108,6 +108,8 @@ public class HeartManager : MonoBehaviour
 
         RoseWallet.Instance?.AddRose(1);
 
+        GameSaveManager.Instance?.RequestSave();
+
     }
 
     // ===================== FIND MERGE TRIPLE =====================
@@ -251,6 +253,8 @@ public class HeartManager : MonoBehaviour
                 panels.Show(icon, newStats.level, oldMoney, newStats.moneyValue);
             }
         }
+
+        GameSaveManager.Instance?.RequestSave();
     }
 
     // ===================== HELPERS =====================
@@ -380,4 +384,61 @@ public class HeartManager : MonoBehaviour
 
         return prefabStats.icon;
     }
+
+    public void RebuildChainFromLevels(System.Collections.Generic.List<int> levels)
+    {
+        var chain = FindObjectOfType<HeartChainManager>();
+        if (chain == null) return;
+
+        // destroy old hearts in chain (scene)
+        if (chain.hearts != null)
+        {
+            for (int i = chain.hearts.Count - 1; i >= 0; i--)
+            {
+                var t = chain.hearts[i];
+                if (t != null) Destroy(t.gameObject);
+            }
+            chain.hearts.Clear();
+        }
+        else chain.hearts = new System.Collections.Generic.List<Transform>();
+
+        if (levels == null || levels.Count == 0) return;
+
+        // spawn sequentially using heartPrefabsByLevel (level-1)
+        for (int i = 0; i < levels.Count; i++)
+        {
+            int lv = Mathf.Max(1, levels[i]);
+            int idx = lv - 1;
+
+            if (heartPrefabsByLevel == null || idx < 0 || idx >= heartPrefabsByLevel.Count) idx = 0;
+            var prefab = heartPrefabsByLevel[idx];
+            if (prefab == null) continue;
+
+            Vector3 pos = Vector3.zero;
+            Quaternion rot = Quaternion.identity;
+
+            // spawn near previous (tạm), sau đó chain.SnapChainImmediate sẽ đặt đúng
+            if (i > 0 && chain.hearts[i - 1] != null)
+            {
+                pos = chain.hearts[i - 1].position;
+                rot = chain.hearts[i - 1].rotation;
+            }
+            else if (chain.GetLeader() != null)
+            {
+                pos = chain.GetLeader().position;
+                rot = chain.GetLeader().rotation;
+            }
+
+            var go = Instantiate(prefab, pos, rot, spawnParent);
+            chain.hearts.Add(go.transform);
+
+            var energy = go.GetComponent<HeartWithEnergy>();
+            if (energy != null) energy.enabled = false;
+        }
+
+        chain.RecalculateLeaderByWeight();
+        chain.EnsureEnergyOnLeaderOnly();
+        chain.SnapChainImmediate();
+    }
+
 }

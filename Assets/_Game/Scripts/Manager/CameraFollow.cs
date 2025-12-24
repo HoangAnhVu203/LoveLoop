@@ -84,4 +84,18 @@ public class CameraFollow : MonoBehaviour
             offset = transform.position - target.position;
         }
     }
+
+    public void RebindToLeaderSnap()
+    {
+        if (chainManager == null) chainManager = FindObjectOfType<HeartChainManager>();
+        if (chainManager == null) return;
+
+        var leader = chainManager.GetLeader();
+        if (leader == null) return;
+
+        target = leader;
+        // Snap ngay để “focus”
+        transform.position = target.position + offset;
+        transform.LookAt(target.position);
+    }
 }

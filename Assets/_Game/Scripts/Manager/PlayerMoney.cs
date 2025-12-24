@@ -47,4 +47,20 @@ public class PlayerMoney : MonoBehaviour
         if (moneyText != null)
             moneyText.text = "$ " + MoneyFormatter.Format(currentMoney);
     }
+
+    public void SetMoney(long value)
+    {
+        currentMoney = value;
+        if (currentMoney < 0) currentMoney = 0;
+        ForceRefreshUI();
+    }
+
+    public void ForceRefreshUI()
+    {
+        // gọi lại UpdateUI nội bộ
+        // nếu UpdateUI đang private, đổi nó thành internal/public hoặc copy logic ở đây:
+        if (moneyText != null)
+            moneyText.text = "$ " + MoneyFormatter.Format(currentMoney);
+    }
+
 }

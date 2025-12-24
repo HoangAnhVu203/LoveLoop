@@ -32,4 +32,17 @@ public static class RoadUpgradeStore
 
         PlayerPrefs.Save();
     }
+
+    public static void SetUnlockedRoadCount(int unlocked)
+    {
+        PlayerPrefs.SetInt(KEY_UNLOCKED_ROADS, Mathf.Max(1, unlocked));
+        PlayerPrefs.Save();
+    }
+
+    public static void SetUpgradeCount(int upgrades)
+    {
+        PlayerPrefs.SetInt(KEY_UPGRADE_COUNT, Mathf.Max(0, upgrades));
+        PlayerPrefs.Save();
+    }
+
 }

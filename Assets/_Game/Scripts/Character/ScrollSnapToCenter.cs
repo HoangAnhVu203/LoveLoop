@@ -170,22 +170,20 @@ public class ScrollSnapToCenter : MonoBehaviour, IBeginDragHandler, IEndDragHand
     }
 
     private void ApplyFocused(int idx)
+{
+    if (idx == currentIndex) return;
+    currentIndex = idx;
+
+    if (itemUIs != null && idx >= 0 && idx < itemUIs.Count)
     {
-        if (idx == currentIndex) return;
-        currentIndex = idx;
-
-        if (infoPanel != null && itemUIs != null && idx >= 0 && idx < itemUIs.Count)
-            infoPanel.Show(itemUIs[idx].Data);
-
-        if (itemUIs != null && idx >= 0 && idx < itemUIs.Count)
-        {
-            OnCenteredChanged?.Invoke(itemUIs[idx].Data);
-        }
-
-        if (highlightFocused && itemUIs != null)
-        {
-            for (int i = 0; i < itemUIs.Count; i++)
-                itemUIs[i].SetFocused(i == idx);
-        }
+        OnCenteredChanged?.Invoke(itemUIs[idx].Data);
     }
+
+    if (highlightFocused && itemUIs != null)
+    {
+        for (int i = 0; i < itemUIs.Count; i++)
+            itemUIs[i].SetFocused(i == idx);
+    }
+}
+
 }

@@ -66,4 +66,8 @@ public static class ActionCostStore
         }
         return defaultValue;
     }
+
+    public static void SetAddCost(long value)   => SaveLong(KEY_ADD_COST, (long)Mathf.Max(0, value));
+    public static void SetMergeCost(long value) => SaveLong(KEY_MERGE_COST, (long)Mathf.Max(0, value));
+
 }

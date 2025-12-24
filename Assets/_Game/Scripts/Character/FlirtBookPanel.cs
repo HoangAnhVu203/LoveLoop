@@ -22,9 +22,15 @@ public class FlirtBookPanel : UICanvas
 
     CharacterData currentCharacter;
 
+    readonly List<CharacterThumbItemUI> spawnedThumbs = new();
+
     void Start()
     {
         Build();
+
+        if (currentCharacter == null && characters != null && characters.Count > 0)
+            currentCharacter = characters[0];
+
         RefreshCurrentUI();
     }
 
@@ -33,48 +39,60 @@ public class FlirtBookPanel : UICanvas
         for (int i = content.childCount - 1; i >= 0; i--)
             Destroy(content.GetChild(i).gameObject);
 
-        var spawned = new List<CharacterThumbItemUI>();
+        spawnedThumbs.Clear();
+
+        if (characters == null) characters = new List<CharacterData>();
 
         foreach (var c in characters)
         {
             var item = Instantiate(thumbPrefab, content);
             item.Bind(c);
-            spawned.Add(item);
+            spawnedThumbs.Add(item);
         }
 
-        centerSelector.SetItems(spawned);
-
-        centerSelector.OnCenteredChanged = (c) =>
+        if (centerSelector != null)
         {
-            currentCharacter = c;
-            RefreshCurrentUI();
-        };
+            centerSelector.SetItems(spawnedThumbs);
+            centerSelector.OnCenteredChanged = (c) =>
+            {
+                currentCharacter = c;
+                RefreshCurrentUI();
+            };
+        }
 
-        if (characters != null && characters.Count > 0)
+        if (characters.Count > 0)
             currentCharacter = characters[0];
+
+    }
+
+    int GetCurrentLevel(CharacterData character)
+    {
+        if (character == null) return 1;
+
+        int defaultLv = character.level <= 0 ? 1 : character.level;
+        return CharacterProgressStore.GetLevel(character.characterId, defaultLv);
     }
 
     void RefreshCurrentUI()
     {
         if (currentCharacter == null) return;
 
+        int lv = GetCurrentLevel(currentCharacter);
         if (infoPanel != null)
-            infoPanel.Show(currentCharacter);
+            infoPanel.Show(currentCharacter, lv);
 
-        RefreshPhotoButtonState();
+        RefreshPhotoButtonState(lv);
+
+        RefreshLevelUpButtonState(lv);
     }
 
-    void RefreshPhotoButtonState()
+    void RefreshPhotoButtonState(int lv)
     {
-        if (currentCharacter == null) return;
-
-        int defaultLv = currentCharacter.level <= 0 ? 1 : currentCharacter.level;
-        int lv = CharacterProgressStore.GetLevel(currentCharacter.characterId, defaultLv);
-
         bool unlocked = lv >= photoUnlockLevel;
 
         if (cameraBtn != null)
             cameraBtn.interactable = unlocked;
+
         if (cameraBtnGroup != null)
         {
             cameraBtnGroup.alpha = unlocked ? unlockedAlpha : lockedAlpha;
@@ -83,21 +101,28 @@ public class FlirtBookPanel : UICanvas
         }
     }
 
+    void RefreshLevelUpButtonState(int lv)
+    {
+        bool canUp = lv < CharacterProgressStore.MAX_LEVEL;
+    }
+
+
     public void OnLevelUpClicked()
     {
         if (currentCharacter == null) return;
 
+        int lv = GetCurrentLevel(currentCharacter);
+        if (lv >= CharacterProgressStore.MAX_LEVEL) return;
+
         int defaultLv = currentCharacter.level <= 0 ? 1 : currentCharacter.level;
-        int currentLv = CharacterProgressStore.GetLevel(currentCharacter.characterId, defaultLv);
-
-        if (currentLv >= CharacterProgressStore.MAX_LEVEL)
-            return;
-
         int newLv = CharacterProgressStore.LevelUp(currentCharacter.characterId, defaultLv);
 
-        if (infoPanel != null) infoPanel.Refresh();
+        if (infoPanel != null)
+            infoPanel.Refresh(newLv);
 
-        RefreshPhotoButtonState();
+        RefreshPhotoButtonState(newLv);
+
+        RefreshLevelUpButtonState(newLv);
 
         Debug.Log($"[LevelUp] {currentCharacter.characterId} -> LEVEL {newLv}");
     }
@@ -106,8 +131,7 @@ public class FlirtBookPanel : UICanvas
     {
         if (currentCharacter == null) return;
 
-        int defaultLv = currentCharacter.level <= 0 ? 1 : currentCharacter.level;
-        int lv = CharacterProgressStore.GetLevel(currentCharacter.characterId, defaultLv);
+        int lv = GetCurrentLevel(currentCharacter);
 
         if (lv < photoUnlockLevel)
         {

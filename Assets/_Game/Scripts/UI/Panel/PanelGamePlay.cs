@@ -404,6 +404,9 @@ public class PanelGamePlay : UICanvas
 
         if (ok)
             GameManager.Instance?.RefreshLapPreview();
+
+
+        Refresh();
     }
 
     public void UpgradeRoadBTN()
@@ -430,5 +433,10 @@ public class PanelGamePlay : UICanvas
     public void OpenFlirtBookBTN()
     {
         UIManager.Instance.OpenUI<FlirtBookPanel>();
+    }
+    
+    public void OpenSettingBTN()
+    {
+        UIManager.Instance.OpenUI<PanelSetting>();
     }
 }

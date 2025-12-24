@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public static class GateCostStore
@@ -49,4 +50,22 @@ public static class GateCostStore
         if (v <= 0f) return 0;
         return (long)Mathf.CeilToInt(v);
     }
+
+    public static void SetPurchasedGateCount(int count)
+    {
+        PlayerPrefs.SetInt(KEY_GATE_COUNT, Mathf.Max(0, count));
+        PlayerPrefs.Save();
+    }
+
+    public static long GetLastCost()
+    {
+        return PlayerPrefs.GetInt(KEY_LAST_COST, (int)fixedCosts[3]);
+    }
+
+    public static void SetLastCost(long lastCost)
+    {
+        PlayerPrefs.SetInt(KEY_LAST_COST, (int)Mathf.Clamp(lastCost, 0, int.MaxValue));
+        PlayerPrefs.Save();
+    }
+
 }

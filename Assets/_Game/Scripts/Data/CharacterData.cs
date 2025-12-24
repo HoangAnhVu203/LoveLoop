@@ -14,4 +14,15 @@ public class CharacterData : ScriptableObject
     public float revenueMultiplier;
 
     public List<CharacterPhotoEntry> photos = new List<CharacterPhotoEntry>(4);
+
+    [Header("Level Icons (index 0 = LV1)")]
+    public List<Sprite> levelIcons = new List<Sprite>(12);
+
+    public Sprite GetLevelIcon(int lv)
+    {
+        if (levelIcons == null || levelIcons.Count == 0) return null;
+
+        int idx = Mathf.Clamp(lv, 1, levelIcons.Count) - 1;
+        return levelIcons[idx];
+    }
 }

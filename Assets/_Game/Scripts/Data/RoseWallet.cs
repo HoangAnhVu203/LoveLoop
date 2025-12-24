@@ -71,4 +71,14 @@ public class RoseWallet : MonoBehaviour
         if (roseText != null)
             roseText.text = CurrentRose.ToString("N0");
     }
+
+    public void SetRose(long value)
+    {
+        CurrentRose = value;
+        if (CurrentRose < 0) CurrentRose = 0;
+
+        Save();
+        UpdateUI();
+    }
+
 }
