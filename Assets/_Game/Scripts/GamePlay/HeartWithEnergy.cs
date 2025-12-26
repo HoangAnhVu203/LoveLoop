@@ -62,6 +62,11 @@ public class HeartWithEnergy : MonoBehaviour
     static readonly List<RaycastResult> _uiHits = new();
     PointerEventData _ped;
 
+    public static bool IsAutoBoostingGlobal { get; private set; }
+    public static float AutoBoostEndTime { get; private set; }
+
+    public static bool CanManualPress => !IsAutoBoostingGlobal;
+
     void Awake()
     {
         _mainCam = Camera.main;
@@ -121,12 +126,43 @@ public class HeartWithEnergy : MonoBehaviour
     {
         FollowSelfForEnergyBar();
 
-        bool isPressing = IsPressing();
-        if (isPressing) _lastPressTime = Time.time;
+                // ===== AutoBoost countdown =====
+        if (IsAutoBoostingGlobal && Time.time >= AutoBoostEndTime)
+        {
+            IsAutoBoostingGlobal = false;
+        }
 
-        HandleEnergyAndSpeed(isPressing);
+        // ===== Input =====
+        // Trong lúc auto boost, bạn muốn "không ấn được" => khóa manual
+        bool manualPress = !IsAutoBoostingGlobal && IsPressing();
+        bool autoBoost = IsAutoBoostingGlobal;
 
-        bool isBoosting = isPressing && _currentEnergy > 0f;
+        bool boostingInput = autoBoost || manualPress;
+
+        if (boostingInput) _lastPressTime = Time.time;
+
+        // ===== Energy + Speed =====
+        if (autoBoost)
+        {
+            // AUTO BOOST: boostSpeed luôn bật, KHÔNG tốn energy
+            _targetSpeed = boostSpeed;
+
+            // Option 1 (khuyến nghị): vẫn cho refill lên max để UI đẹp
+            if (_currentEnergy < maxEnergy)
+                _currentEnergy = Mathf.Min(maxEnergy, _currentEnergy + refillPerSecond * Time.deltaTime);
+
+            // Nếu bạn muốn "giữ nguyên energy hiện tại, không refill" thì bỏ đoạn refill trên.
+        }
+        else
+        {
+            // MANUAL: dùng cơ chế cũ (giữ để boost, tốn energy)
+            HandleEnergyAndSpeed(manualPress);
+        }
+
+        // ===== Boost state global =====
+        bool isBoosting = boostingInput && (autoBoost || _currentEnergy > 0f);
+        // - autoBoost: luôn boost
+        // - manual: chỉ boost khi còn energy
         IsBoostingGlobal = isBoosting;
 
         UpdateBoostVFX(isBoosting);
@@ -149,8 +185,8 @@ public class HeartWithEnergy : MonoBehaviour
         }
 
         UpdateEnergyUI();
-        HandleFade(isPressing);
-    }
+        HandleFade(boostingInput);
+        }
 
         bool IsPointerBlockingByUI()
         {
@@ -183,6 +219,8 @@ public class HeartWithEnergy : MonoBehaviour
 
     bool IsPressing()
     {
+        if (IsAutoBoostingGlobal) return false;
+
         if (IsPointerBlockingByUI())
             return false;
 #if UNITY_EDITOR || UNITY_STANDALONE
@@ -293,6 +331,18 @@ public class HeartWithEnergy : MonoBehaviour
         return _upgradeCount;
     }
 
+    public static void StartAutoBoost(float durationSeconds)
+    {
+        if (durationSeconds <= 0f) return;
 
+        IsAutoBoostingGlobal = true;
+        AutoBoostEndTime = Time.time + durationSeconds;
+    }
+
+    public static float GetAutoBoostRemaining()
+    {
+        if (!IsAutoBoostingGlobal) return 0f;
+        return Mathf.Max(0f, AutoBoostEndTime - Time.time);
+    }
 
 }

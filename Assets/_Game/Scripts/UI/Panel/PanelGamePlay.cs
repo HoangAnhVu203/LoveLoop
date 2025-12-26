@@ -56,10 +56,10 @@ public class PanelGamePlay : UICanvas
 
     [Header("Flirt Book UI")]
     [SerializeField] GameObject flirtBookButtonGO;
-    // [SerializeField] GameObject banner;
 
-    // [SerializeField]  GameObject buttonAds;
-
+    [Header("Boost Button")]
+    [SerializeField] Button boostAdsBtn;
+    [SerializeField] Text boostTxt; 
 
     Image _btnImage;
 
@@ -103,6 +103,22 @@ public class PanelGamePlay : UICanvas
 
     void Update()
     {
+        bool isAuto = HeartWithEnergy.IsAutoBoostingGlobal;
+        if (boostAdsBtn != null) boostAdsBtn.interactable = !isAuto;
+
+        if (boostTxt != null)
+        {
+            if (isAuto)
+            {
+                int s = Mathf.CeilToInt(HeartWithEnergy.GetAutoBoostRemaining());
+                boostTxt.text = $"BOOST {s}s";
+            }
+            else
+            {
+                boostTxt.text = "+60s BOOST";
+            }
+        }
+
         if (Time.time < _nextCheckTime) return;
         _nextCheckTime = Time.time + checkInterval;
 
@@ -323,7 +339,7 @@ public class PanelGamePlay : UICanvas
         if (boostBtn != null)
         {
             boostBtn.interactable = true;
-            if (_btnImage != null) _btnImage.color = Color.white;
+            // if (_btnImage != null) _btnImage.color = Color.white;
         }
     }
 
@@ -463,11 +479,11 @@ public class PanelGamePlay : UICanvas
         UIManager.Instance.OpenUI<PanelSetting>();
     }
 
-    // public void CloseAdsBTN()
-    // {
-    //     buttonAds.SetActive(false);
-    //     banner.SetActive(false);
-    // }
+    public void Boost60sBTN()
+    {
+        if (HeartWithEnergy.IsAutoBoostingGlobal) return;
 
+        HeartWithEnergy.StartAutoBoost(60f);
+    }
 
 }

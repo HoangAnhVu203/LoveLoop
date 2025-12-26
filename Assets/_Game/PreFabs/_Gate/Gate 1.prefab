@@ -86,7 +86,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GateVisualBinder
   visualRoot: {fileID: 0}
-  localPos: {x: 0, y: 0, z: 2.5}
+  localPos: {x: 2.75, y: 0, z: 2.5}
   localEuler: {x: 0, y: 180, z: 0}
   localScale: {x: 1.7, y: 1.7, z: 1.7}
 --- !u!1001 &1608523147605053009
@@ -144,6 +144,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 80aa4bda764954de0a4fc1ef8c7d1d61, type: 3}
       propertyPath: m_Name
       value: ray (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 80aa4bda764954de0a4fc1ef8c7d1d61, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -6,8 +6,8 @@ public static class ActionCostStore
     const string KEY_MERGE_COST = "COST_MERGE";
 
     // Base
-    const long ADD_START_COST = 4;
-    const long MERGE_START_COST = 37;
+    const long ADD_START_COST = 10;
+    const long MERGE_START_COST = 50;
 
     // Tăng % mỗi lần
     const float ADD_MIN_GROW = 0.02f; 
