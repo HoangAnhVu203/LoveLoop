@@ -554,10 +554,35 @@ MonoBehaviour:
   alignToSplineForward: 1
   gateEulerOffset: {x: 0, y: 90, z: 0}
   maxGates: 24
-  avatarPrefab: {fileID: 8146423016544187472, guid: c98b52ba17adf4142b687ae1ec88f3ea, type: 3}
   girlOrder: {fileID: 1621477710}
-  avatarLocalOffset: {x: -1, y: 2, z: 2}
   loopGirls: 0
+  girlModelPrefabs:
+  - {fileID: 7261736640631760325, guid: 2f6819c721f9f4598a2af6eb9acb20c4, type: 3}
+  - {fileID: 5980061172570663123, guid: 44064599ec4b348119dd7af0fba5b8f9, type: 3}
+  - {fileID: 7645542771792894112, guid: de91e98010a9f4348a28c36fc366dd94, type: 3}
+  - {fileID: 8199010710387141916, guid: 73d57fdf968a84a8b8f83edf3841359f, type: 3}
+  - {fileID: 4651746090219948182, guid: ca57bea1455de441ca8b9ae2f7e42c3f, type: 3}
+  - {fileID: 5074190792679733534, guid: c189ce4f720244d6999cf86ff61eae91, type: 3}
+  - {fileID: 9187751927128989593, guid: 5318a4dd63a8d491d99eb0858d25d24f, type: 3}
+  - {fileID: 1151449128436471522, guid: cbddeed821af748f0991108e5c457715, type: 3}
+  - {fileID: 9021928622370262687, guid: e7022df793c614aab9ebaf1be4bf8f77, type: 3}
+  - {fileID: 6008625726942861897, guid: 0b7ea12d4d68346c2ad11d8fcb656869, type: 3}
+  - {fileID: 1670333076139611547, guid: 49f6f63dd808249d8bce647bd5819527, type: 3}
+  - {fileID: 5832924576153217971, guid: a08c4c525165b495da7876caac53f8ca, type: 3}
+  - {fileID: 3425993962376347618, guid: e00a750d16b834f6c99e308c4c7d8c4c, type: 3}
+  - {fileID: 8098797952980178570, guid: 0540aa9c7b368499b969933728dc79cd, type: 3}
+  - {fileID: 7890827471048457692, guid: d6d97d26da5184a5ca0444aa12030e03, type: 3}
+  - {fileID: 2615461343271810227, guid: d36630d8a940f4b3cb7b69e5bdb871c4, type: 3}
+  - {fileID: 9206735067193080654, guid: 34eb3d2e84ed8429691524e6db607d5d, type: 3}
+  - {fileID: 5512703750827802627, guid: baa19bff56e38445a86f5552cf652d04, type: 3}
+  - {fileID: 5075583987748400593, guid: 2e2c9f47d90034416b62f97b8847e310, type: 3}
+  - {fileID: 3763290575841887389, guid: 937177a3f70cf441f9bd97e5a3bbe959, type: 3}
+  - {fileID: 6274259329307019304, guid: dee28bd387d64451c9ba4c24cacd2cbe, type: 3}
+  - {fileID: 1205842538192845203, guid: 248c9a0bf95ff43919d14b232d405f56, type: 3}
+  - {fileID: 7436507905196230918, guid: 4adaf9fa12679463c9a521ff8110880b, type: 3}
+  - {fileID: 8911471010166004243, guid: 6309f91cead0f4557ae0f8826a070b65, type: 3}
+  - {fileID: 1996088114889359955, guid: d86bbebbc6a1a435d931b9afabf62447, type: 3}
+  defaultModelPrefab: {fileID: 7261736640631760325, guid: 2f6819c721f9f4598a2af6eb9acb20c4, type: 3}
 --- !u!1 &428114545
 GameObject:
   m_ObjectHideFlags: 0
@@ -2624,6 +2649,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1488164158}
   m_CullTransparentMesh: 1
+--- !u!1 &1499607826
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1499607827}
+  m_Layer: 0
+  m_Name: Modal3D_Root
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1499607827
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499607826}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1746358840}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1504006128
 GameObject:
   m_ObjectHideFlags: 0
@@ -3245,6 +3301,7 @@ Transform:
   - {fileID: 932517724}
   - {fileID: 1413492099}
   - {fileID: 1320816263}
+  - {fileID: 1499607827}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1797320767

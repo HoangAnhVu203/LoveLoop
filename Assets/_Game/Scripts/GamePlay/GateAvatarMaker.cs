@@ -27,7 +27,6 @@ public class GateAvatarMarker : MonoBehaviour
         if (cam == null) cam = Camera.main;
         if (cam == null || billboardRoot == null) return;
 
-        // billboard (giữ thẳng đứng)
         Vector3 dir = billboardRoot.position - cam.transform.position;
         dir.y = 0f;
         if (dir.sqrMagnitude < 1e-6f) return;

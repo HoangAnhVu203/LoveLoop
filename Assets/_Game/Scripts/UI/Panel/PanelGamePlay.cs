@@ -56,7 +56,9 @@ public class PanelGamePlay : UICanvas
 
     [Header("Flirt Book UI")]
     [SerializeField] GameObject flirtBookButtonGO;
-    [SerializeField] GameObject banner;
+    // [SerializeField] GameObject banner;
+
+    // [SerializeField]  GameObject buttonAds;
 
 
     Image _btnImage;
@@ -461,8 +463,11 @@ public class PanelGamePlay : UICanvas
         UIManager.Instance.OpenUI<PanelSetting>();
     }
 
-    public void CloseAdsBTN()
-    {
-        banner.SetActive(false);
-    }
+    // public void CloseAdsBTN()
+    // {
+    //     buttonAds.SetActive(false);
+    //     banner.SetActive(false);
+    // }
+
+
 }

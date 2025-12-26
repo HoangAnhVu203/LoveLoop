@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 191520416517026846}
   - component: {fileID: 406810179780131937}
   - component: {fileID: 6007484372309088260}
+  - component: {fileID: 7506659530226957102}
   m_Layer: 0
   m_Name: Gate 1
   m_TagString: Untagged
@@ -48,6 +49,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gate
   chain: {fileID: 0}
   rider: {fileID: 0}
+  characterId: 
+  defaultLv: 1
+  cooldownPerHeart: 0.2
 --- !u!65 &6007484372309088260
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -69,6 +73,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.30679846, y: 0.76484245, z: 3.4017677}
   m_Center: {x: -0.00040211529, y: 0.38341364, z: 0.0017434955}
+--- !u!114 &7506659530226957102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8274751851560510820}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9617e75f77b44cc9a6fdd4dfeb01b70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GateVisualBinder
+  visualRoot: {fileID: 0}
+  localPos: {x: 0, y: 0, z: 2.5}
+  localEuler: {x: 0, y: 180, z: 0}
+  localScale: {x: 1.7, y: 1.7, z: 1.7}
 --- !u!1001 &1608523147605053009
 PrefabInstance:
   m_ObjectHideFlags: 0
