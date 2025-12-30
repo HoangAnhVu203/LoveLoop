@@ -61,12 +61,27 @@ public class PanelGamePlay : UICanvas
     [SerializeField] Button boostAdsBtn;
     [SerializeField] Text boostTxt; 
 
+    [Header("Building Claim Item")]
+    [SerializeField] GameObject collectButtonGO;   
+    [SerializeField] Button collectButton;         
+
+    float _nextCheck;
+
     Image _btnImage;
 
     void Awake()
     {
         _chain = FindObjectOfType<HeartChainManager>();
         if (boostBtn != null) _btnImage = boostBtn.GetComponent<Image>();
+
+        if (collectButtonGO == null) collectButtonGO = gameObject;
+        if (collectButton == null) collectButton = collectButtonGO.GetComponent<Button>();
+
+        if (collectButton != null)
+        {
+            collectButton.onClick.RemoveAllListeners();
+            collectButton.onClick.AddListener(OnCollectClick);
+        }
     }
 
     void OnEnable()
@@ -85,6 +100,9 @@ public class PanelGamePlay : UICanvas
 
         if (PlayerMoney.Instance != null && moneyText != null)
             PlayerMoney.Instance.BindMoneyText(moneyText);
+
+        if (collectButtonGO != null) collectButtonGO.SetActive(false);
+            _nextCheck = 0f;
 
         Refresh();
         ForceRefreshMergeButton();
@@ -123,6 +141,17 @@ public class PanelGamePlay : UICanvas
         _nextCheckTime = Time.time + checkInterval;
 
         if (_chain == null) _chain = FindObjectOfType<HeartChainManager>();
+
+        if (Time.unscaledTime < _nextCheck) return;
+        _nextCheck = Time.unscaledTime + checkInterval;
+
+        var bpm = BuildingProductionManager.Instance;
+        if (bpm == null || collectButtonGO == null) return;
+
+        bool hasGift = bpm.HasAnyClaimable();
+
+        if (collectButtonGO.activeSelf != hasGift)
+            collectButtonGO.SetActive(hasGift);
 
         RefreshMergeButtonIfNeeded();
 
@@ -408,6 +437,23 @@ public class PanelGamePlay : UICanvas
         int totalGates = (GateManager.Instance != null) ? GateManager.Instance.GatesCount : 0;
 
         flirtBookButtonGO.SetActive(totalGates > 0);
+    }
+
+    void OnCollectClick()
+    {
+        var bpm = BuildingProductionManager.Instance;
+        if (bpm == null) return;
+
+        if (bpm.TryClaimAllOnCurrentRoad(out var r))
+        {
+            if (collectButtonGO != null) collectButtonGO.SetActive(false);
+
+            Debug.Log($"[COLLECT] money+{r.money} rose+{r.rose} heart+{r.heart} boost+{r.boostSeconds}s");
+        }
+        else
+        {
+            if (collectButtonGO != null) collectButtonGO.SetActive(false);
+        }
     }
 
 

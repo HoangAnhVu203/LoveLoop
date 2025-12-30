@@ -19,10 +19,19 @@ public class RoadManager : Singleton<RoadManager>
 
     readonly Dictionary<int, int> _gateCountByRoad = new();
 
-    // ✅ chống gọi chồng coroutine switch road
+    [Header("Buildings (only current road runs)")]
+    public bool resetBuildingTimerWhenEnterRoad = true; 
+
     bool _isSwitching = false;
 
     public bool IsReady { get; private set; }
+    List<BuildingOnRoad> GetBuildingsInRoadInstance(int idx)
+    {
+        if (idx < 0 || idx >= _instances.Count) return null;
+        var arr = _instances[idx].GetComponentsInChildren<BuildingOnRoad>(true);
+        if (arr == null || arr.Length == 0) return new List<BuildingOnRoad>(0);
+        return new List<BuildingOnRoad>(arr);
+    }
 
     void Awake()
     {
@@ -40,7 +49,6 @@ public class RoadManager : Singleton<RoadManager>
             _instances.Add(go);
         }
 
-        // ✅ IMPORTANT: IsReady phải false cho tới khi SwitchRoadCR xong thật sự
         IsReady = false;
         _isSwitching = false;
 
@@ -74,7 +82,6 @@ public class RoadManager : Singleton<RoadManager>
     {
         if (_instances.Count == 0) return;
 
-        // ✅ chống bấm khi chưa sẵn / đang switch
         if (!IsReady || _isSwitching) return;
 
         int unlocked = Mathf.Min(RoadUpgradeStore.GetUnlockedRoadCount(), _instances.Count);
@@ -115,7 +122,6 @@ public class RoadManager : Singleton<RoadManager>
 
         RoadUpgradeStore.MarkUpgraded();
 
-        // unlocked cũ -> road mới = index unlocked (vì road index bắt đầu từ 0)
         int newIndex = Mathf.Min(unlocked, _instances.Count - 1);
         _index = newIndex;
 
@@ -133,11 +139,9 @@ public class RoadManager : Singleton<RoadManager>
         _isSwitching = true;
         IsReady = false;
 
-        // bật đúng instance road
         for (int i = 0; i < _instances.Count; i++)
             _instances[i].SetActive(i == idx);
 
-        // đợi 1 frame cho hierarchy ổn định
         yield return null;
 
         var spline = _instances[idx].GetComponentInChildren<SplinePath>(true);
@@ -145,7 +149,6 @@ public class RoadManager : Singleton<RoadManager>
         {
             Debug.LogError("[RoadManager] Road thiếu SplinePath");
             _isSwitching = false;
-            // IsReady vẫn false
             yield break;
         }
 
@@ -158,6 +161,12 @@ public class RoadManager : Singleton<RoadManager>
             GateManager.Instance.OnRoadChanged(spline);
 
         Debug.Log($"[RoadManager] Switched to road {idx}: {_instances[idx].name}");
+                // ===== BUILDING: chỉ road hiện tại chạy =====
+        if (BuildingProductionManager.Instance != null)
+        {
+            var buildings = GetBuildingsInRoadInstance(idx);
+            BuildingProductionManager.Instance.SetActiveBuildings(buildings, resetBuildingTimerWhenEnterRoad);
+        }
 
         IsReady = true;
         _isSwitching = false;

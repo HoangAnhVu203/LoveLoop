@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03d2ccf578ef84c05ad97120a21d04b9, type: 3}
+  m_Name: Factory
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingData
+  buildingID: buil_4
+  buildingName: Factory
+  buildingIMG: {fileID: 21300000, guid: f880198fc40824b4d9a7664179077e44, type: 3}
+  buildingDes: 'Production: '
+  type: 2
+  intervalSeconds: 180
+  rewardType: 2
+  baseAmount: 5
+  amountMultiplierPerLevel: 2
+  maxLevel: 3
+  baseUpgradeCost: 0
+  costMultiplierPerLevel: 0
