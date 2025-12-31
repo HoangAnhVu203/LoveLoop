@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -63,7 +64,10 @@ public class PanelGamePlay : UICanvas
 
     [Header("Building Claim Item")]
     [SerializeField] GameObject collectButtonGO;   
-    [SerializeField] Button collectButton;         
+    [SerializeField] Button collectButton;      
+    private float pulseScale = 1.15f;
+    private float pulseSpeed = 6f;
+    Coroutine _pulseCR;   
 
     float _nextCheck;
 
@@ -151,7 +155,15 @@ public class PanelGamePlay : UICanvas
         bool hasGift = bpm.HasAnyClaimable();
 
         if (collectButtonGO.activeSelf != hasGift)
+        {
             collectButtonGO.SetActive(hasGift);
+
+            if (hasGift)
+                StartPulse();
+            else
+                StopPulse();
+        }
+
 
         RefreshMergeButtonIfNeeded();
 
@@ -446,6 +458,7 @@ public class PanelGamePlay : UICanvas
 
         if (bpm.TryClaimAllOnCurrentRoad(out var r))
         {
+            StopPulse();
             if (collectButtonGO != null) collectButtonGO.SetActive(false);
 
             Debug.Log($"[COLLECT] money+{r.money} rose+{r.rose} heart+{r.heart} boost+{r.boostSeconds}s");
@@ -455,6 +468,39 @@ public class PanelGamePlay : UICanvas
             if (collectButtonGO != null) collectButtonGO.SetActive(false);
         }
     }
+
+    void StartPulse()
+    {
+        if (_pulseCR != null) StopCoroutine(_pulseCR);
+        _pulseCR = StartCoroutine(PulseCollectButton());
+    }
+
+    void StopPulse()
+    {
+        if (_pulseCR != null)
+        {
+            StopCoroutine(_pulseCR);
+            _pulseCR = null;
+        }
+
+        if (collectButtonGO != null)
+            collectButtonGO.transform.localScale = Vector3.one;
+    }
+
+    IEnumerator PulseCollectButton()
+    {
+        Transform t = collectButtonGO.transform;
+        Vector3 baseScale = Vector3.one;
+
+        while (true)
+        {
+            float s = (Mathf.Sin(Time.unscaledTime * pulseSpeed) + 1f) * 0.5f;
+            float scale = Mathf.Lerp(1f, pulseScale, s);
+            t.localScale = baseScale * scale;
+            yield return null;
+        }
+    }
+
 
 
     // ================= BUTTON EVENTS =================
@@ -535,6 +581,11 @@ public class PanelGamePlay : UICanvas
     public void ReviewBTN()
     {
         UIManager.Instance.OpenUI<PanelReview>();
+    }
+
+    public void BuildingBookBTn()
+    {
+        UIManager.Instance.OpenUI<PanelBuilding>();
     }
 
 }

@@ -63,6 +63,9 @@ public class HeartWithEnergy : MonoBehaviour
     PointerEventData _ped;
 
     public static bool IsAutoBoostingGlobal { get; private set; }
+
+    private static float _autoBoostEndTime;
+
     public static float AutoBoostEndTime { get; private set; }
 
     public static bool CanManualPress => !IsAutoBoostingGlobal;
@@ -344,5 +347,12 @@ public class HeartWithEnergy : MonoBehaviour
         if (!IsAutoBoostingGlobal) return 0f;
         return Mathf.Max(0f, AutoBoostEndTime - Time.time);
     }
+
+    public static void StopAutoBoost()
+    {
+        IsAutoBoostingGlobal = false;
+        _autoBoostEndTime = 0f;
+    }
+
 
 }

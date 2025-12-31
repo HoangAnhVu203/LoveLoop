@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
   buildingID: biuld_1
   buildingName: Florist
-  buildingIMG: {fileID: 21300000, guid: 5d846d5d64b1c46b2b7b237a7d9f3f66, type: 3}
-  buildingDes: 'Production:  '
+  buildingIMG: {fileID: 21300000, guid: b914fbacd958e44858d6f421e1193683, type: 3}
+  buildingLevel: 1
+  buildingDes: "Production:  \n+ 1 rose"
   type: 0
   intervalSeconds: 180
   rewardType: 0

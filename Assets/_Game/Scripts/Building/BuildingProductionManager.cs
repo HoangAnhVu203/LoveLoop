@@ -100,9 +100,10 @@ public class BuildingProductionManager : MonoBehaviour
 
     int CalcAmount(BuildingOnRoad b)
     {
-        float mul = Mathf.Pow(b.data.amountMultiplierPerLevel, Mathf.Max(0, b.level - 1));
-        return Mathf.Max(1, Mathf.RoundToInt(b.data.baseAmount * mul));
+        if (b == null || b.data == null) return 0;
+        return b.data.CalcRewardAmount(b.level);
     }
+
 
     public readonly struct ClaimResult
     {

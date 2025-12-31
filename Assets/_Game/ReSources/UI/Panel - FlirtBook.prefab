@@ -1641,12 +1641,11 @@ MonoBehaviour:
   viewport: {fileID: 2337315162977621228}
   content: {fileID: 6572250774391522819}
   itemRects: []
-  infoPanel: {fileID: 6895077740685176857}
-  itemUIs: []
+  legacyItemUIs: []
   snapDuration: 0.18
   snapThreshold: 5
   updateWhileDragging: 1
-  highlightFocused: 1
+  forceRebuildLayoutBeforeSnap: 1
 --- !u!1 &9125030230931683420
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1514555312101220982}
   - component: {fileID: 1151814441375588686}
   - component: {fileID: 8263179413938963220}
+  - component: {fileID: 476601844892957223}
   m_Layer: 5
   m_Name: Building
   m_TagString: Untagged
@@ -77,6 +78,22 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &476601844892957223
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1195326157569742984}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12c2c098d66384b44817d59889dbc399, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingThumbItemUI
+  icon: {fileID: 7880836625100576843}
+  nameText: {fileID: 3354194666437706762}
+  focusedScale: 1.12
+  normalScale: 1
 --- !u!1 &7663322850917140436
 GameObject:
   m_ObjectHideFlags: 0
@@ -111,8 +128,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0, y: 7.9699}
-  m_SizeDelta: {x: 277.3297, y: 308.122}
+  m_AnchoredPosition: {x: -0.00001812, y: 37.00891}
+  m_SizeDelta: {x: 340.9864, y: 366.1123}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6978513611578994831
 CanvasRenderer:
@@ -186,7 +203,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.6422, y: -175.99115}
+  m_AnchoredPosition: {x: -0.000011921, y: -172}
   m_SizeDelta: {x: 317.987, y: 76.2403}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2370744706125842739

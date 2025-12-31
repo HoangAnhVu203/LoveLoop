@@ -5,8 +5,13 @@ public class BoostManager : MonoBehaviour
     public static BoostManager Instance { get; private set; }
 
     float _boostEndTime;
+    bool _applied;
 
-    void Awake() => Instance = this;
+    void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
 
     public bool IsBoosting => Time.time < _boostEndTime;
     public float Remaining => Mathf.Max(0f, _boostEndTime - Time.time);
@@ -19,14 +24,24 @@ public class BoostManager : MonoBehaviour
         float end = Mathf.Max(_boostEndTime, now);
         _boostEndTime = end + seconds;
 
-        HeartWithEnergy.StartAutoBoost(Remaining);
+        if (!_applied)
+        {
+            _applied = true;
+            HeartWithEnergy.StartAutoBoost(Remaining);
+        }
+        else
+        {
+            HeartWithEnergy.StartAutoBoost(Remaining);
+        }
     }
 
     void Update()
     {
-        if (IsBoosting)
+
+        if (_applied && !IsBoosting)
         {
-            HeartWithEnergy.StartAutoBoost(Remaining);
+            _applied = false;
+            HeartWithEnergy.StopAutoBoost();
         }
     }
 }

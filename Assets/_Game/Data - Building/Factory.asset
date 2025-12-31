@@ -14,12 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
   buildingID: buil_4
   buildingName: Factory
-  buildingIMG: {fileID: 21300000, guid: f880198fc40824b4d9a7664179077e44, type: 3}
-  buildingDes: 'Production: '
+  buildingIMG: {fileID: 21300000, guid: a3a5902e804b043b0a4661658a416fec, type: 3}
+  buildingLevel: 1
+  buildingDes: "Production: \n+ 5s boost"
   type: 2
   intervalSeconds: 180
   rewardType: 2
-  baseAmount: 5
+  baseAmount: 1
   amountMultiplierPerLevel: 2
   maxLevel: 3
   baseUpgradeCost: 0
