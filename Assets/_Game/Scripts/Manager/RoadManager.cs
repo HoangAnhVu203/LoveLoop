@@ -57,7 +57,7 @@ public class RoadManager : Singleton<RoadManager>
 
     public int CurrentRoadIndex => _index;
 
-    // ===================== GATE COUNT (GIỮ NGUYÊN) =====================
+    // ===================== GATE COUNT =====================
 
     public int GetGateCountOnCurrentRoad()
     {
@@ -174,7 +174,7 @@ public class RoadManager : Singleton<RoadManager>
         GameSaveManager.Instance?.RequestSave();
     }
 
-    // ===================== TOTAL GATE UTIL (GIỮ NGUYÊN) =====================
+    // ===================== TOTAL GATE UTIL =====================
 
     public int GetTotalGateCountAllRoads()
     {
@@ -220,4 +220,21 @@ public class RoadManager : Singleton<RoadManager>
         StopAllCoroutines();
         StartCoroutine(SwitchRoadCR(_index));
     }
+
+    public GameObject GetCurrentRoadInstance()
+    {
+        if (_instances == null || _instances.Count == 0) return null;
+        if (_index < 0 || _index >= _instances.Count) return null;
+        return _instances[_index];
+    }
+
+    public List<BuildingOnRoad> GetBuildingsOnCurrentRoad(bool includeInactive = true)
+    {
+        var road = GetCurrentRoadInstance();
+        if (road == null) return new List<BuildingOnRoad>();
+
+        var arr = road.GetComponentsInChildren<BuildingOnRoad>(includeInactive);
+        return new List<BuildingOnRoad>(arr);
+    }
+
 }

@@ -1,6 +1,5 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,9 +10,6 @@ public class PanelBuilding : UICanvas
     [SerializeField] private RectTransform content;
     [SerializeField] private BuildingThumbItemUI itemPrefab;
 
-    [Header("Data")]
-    [SerializeField] private List<BuildingData> buildings = new();
-
     [Header("Info Panel (OUTSIDE items)")]
     [SerializeField] private Text levelText;
     [SerializeField] private Text desText;
@@ -22,44 +18,77 @@ public class PanelBuilding : UICanvas
     [SerializeField] private Button upgradeBtn;
     [SerializeField] private Text productionText;
 
-    Coroutine _initCR;
-    int _focusedIndex;
+    private List<BuildingOnRoad> _roadBuildings = new();
+    private readonly List<BuildingThumbItemUI> _items = new();
 
-    readonly List<BuildingThumbItemUI> _items = new();
+    private Coroutine _initCR;
+    private int _focusedIndex;
 
     void OnEnable()
     {
-        if (_initCR != null) StopCoroutine(_initCR);
-            _initCR = StartCoroutine(InitCR());
-                BuildList();
-
         if (snap != null)
         {
             snap.OnCenteredIndexChanged -= OnCenteredIndexChanged;
             snap.OnCenteredIndexChanged += OnCenteredIndexChanged;
         }
+
         if (upgradeBtn != null)
         {
             upgradeBtn.onClick.RemoveAllListeners();
             upgradeBtn.onClick.AddListener(UpgradeFocusedBuilding);
         }
 
-        _focusedIndex = 0;
-
-        snap?.SnapToIndex(0, false);
-        OnCenteredIndexChanged(0);
+        if (_initCR != null) StopCoroutine(_initCR);
+        _initCR = StartCoroutine(InitCR());
     }
 
     void OnDisable()
     {
-        if (snap != null)
-            snap.OnCenteredIndexChanged -= OnCenteredIndexChanged;
-
-        if (_initCR != null) StopCoroutine(_initCR);
+        if (_initCR != null)
+        {
+            StopCoroutine(_initCR);
             _initCR = null;
+        }
 
         if (snap != null)
             snap.OnCenteredIndexChanged -= OnCenteredIndexChanged;
+    }
+
+    public void DimClick()
+    {
+        gameObject.SetActive(false);
+    }
+
+    IEnumerator InitCR()
+    {
+        BuildList();
+
+        yield return null;
+
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(content);
+        var sr = snap != null ? snap.GetComponent<ScrollRect>() : null;
+        if (sr != null)
+        {
+            sr.StopMovement();
+            sr.velocity = Vector2.zero;
+        }
+
+        _focusedIndex = (_items.Count > 0) ? 0 : -1;
+
+        if (_focusedIndex >= 0)
+        {
+            snap?.SnapToIndex(_focusedIndex, false);
+            OnCenteredIndexChanged(_focusedIndex);
+        }
+        else
+        {
+            if (desText != null) desText.text = "";
+            if (levelText != null) levelText.text = "";
+            if (productionText != null) productionText.text = "";
+        }
+
+        _initCR = null;
     }
 
     void BuildList()
@@ -71,10 +100,14 @@ public class PanelBuilding : UICanvas
 
         _items.Clear();
 
-        for (int i = 0; i < buildings.Count; i++)
+        _roadBuildings = RoadManager.Instance != null
+            ? RoadManager.Instance.GetBuildingsOnCurrentRoad(true)
+            : new List<BuildingOnRoad>();
+
+        for (int i = 0; i < _roadBuildings.Count; i++)
         {
             var it = Instantiate(itemPrefab, content);
-            it.Bind(buildings[i]);
+            it.Bind(_roadBuildings[i]);    
             _items.Add(it);
         }
 
@@ -87,29 +120,33 @@ public class PanelBuilding : UICanvas
             snap.SetItems(rects);
         }
     }
-    
-    public void DimClick()
-    {
-        gameObject.SetActive(false);
-    }
 
     void OnCenteredIndexChanged(int idx)
     {
         _focusedIndex = idx;
 
         if (idx < 0 || idx >= _items.Count) return;
-        var item = _items[idx];
-        if (item == null || item.Data == null) return;
 
-        var data = item.Data;
+        var b = _items[idx].Building;
+        if (b == null || b.data == null) return;
 
-        if (desText != null) desText.text = data.buildingDes;
-
-        int lv = item.RuntimeLevel;
-        if (levelText != null) levelText.text = $"Level {lv}";
+        if (desText != null) desText.text = b.data.buildingDes;
+        if (levelText != null) levelText.text = $"Level {b.level}";
 
         if (productionText != null)
-            productionText.text = data.GetRewardText(lv);
+        {
+            int amount = b.data.CalcRewardAmount(b.level);
+
+            switch (b.data.rewardType)
+            {
+                case RewardType.Flower: productionText.text = $"+{amount} Rose "; break;
+                case RewardType.Money: productionText.text = $"+ $ {amount} Money "; break;
+                case RewardType.Heart: productionText.text = $"+{amount} Heart "; break;
+                case RewardType.Boost5s:
+                    productionText.text = $"+{amount * 5}s Boost ";
+                    break;
+            }
+        }
     }
 
     void UpgradeFocusedBuilding()
@@ -120,45 +157,6 @@ public class PanelBuilding : UICanvas
         if (item == null) return;
 
         if (item.TryUpgradeRuntime())
-        {
             OnCenteredIndexChanged(_focusedIndex);
-        }
     }
-
-    IEnumerator InitCR()
-    {
-        BuildList();
-
-        if (snap != null)
-        {
-            snap.OnCenteredIndexChanged -= OnCenteredIndexChanged;
-            snap.OnCenteredIndexChanged += OnCenteredIndexChanged;
-        }
-
-        if (upgradeBtn != null)
-        {
-            upgradeBtn.onClick.RemoveAllListeners();
-            upgradeBtn.onClick.AddListener(UpgradeFocusedBuilding);
-        }
-
-        var sr = snap != null ? snap.GetComponent<ScrollRect>() : null;
-        if (sr != null)
-        {
-            sr.StopMovement();
-            sr.velocity = Vector2.zero;
-            sr.normalizedPosition = new Vector2(0f, 0f); 
-        }
-
-        yield return null;
-        Canvas.ForceUpdateCanvases();
-        LayoutRebuilder.ForceRebuildLayoutImmediate(content);
-
-        _focusedIndex = 0;
-        snap?.SnapToIndex(0, false);
-        OnCenteredIndexChanged(0);
-
-        _initCR = null;
-    }
-
-    
 }

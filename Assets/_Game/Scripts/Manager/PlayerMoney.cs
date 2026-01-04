@@ -57,8 +57,7 @@ public class PlayerMoney : MonoBehaviour
 
     public void ForceRefreshUI()
     {
-        // gọi lại UpdateUI nội bộ
-        // nếu UpdateUI đang private, đổi nó thành internal/public hoặc copy logic ở đây:
+
         if (moneyText != null)
             moneyText.text = "$ " + MoneyFormatter.Format(currentMoney);
     }

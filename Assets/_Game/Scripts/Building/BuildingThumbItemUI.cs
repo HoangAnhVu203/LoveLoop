@@ -10,22 +10,19 @@ public class BuildingThumbItemUI : MonoBehaviour
     [SerializeField] private float focusedScale = 1.12f;
     [SerializeField] private float normalScale = 1f;
 
-    public BuildingData Data { get; private set; }
-    public int RuntimeLevel { get; private set; }
+    public BuildingOnRoad Building { get; private set; }
+    public BuildingData Data => (Building != null) ? Building.data : null;
 
-    public void Bind(BuildingData d)
+    public void Bind(BuildingOnRoad b)
     {
-        Data = d;
+        Building = b;
 
+        var d = Data;
         if (icon != null) icon.sprite = d != null ? d.buildingIMG : null;
         if (nameText != null) nameText.text = d != null ? d.buildingName : "";
 
-        RuntimeLevel = Mathf.Max(1, BuildingLevelStore.GetLevel(d.buildingID, 1));
-
         SetFocused(false);
     }
-
-
 
     public void SetFocused(bool focused)
     {
@@ -34,26 +31,15 @@ public class BuildingThumbItemUI : MonoBehaviour
 
     public bool TryUpgradeRuntime()
     {
-        if (Data == null) return false;
+        if (Building == null) return false;
+        if (Building.data == null) return false;
 
-        RuntimeLevel = Mathf.Max(1, RuntimeLevel);
-
-        if (RuntimeLevel >= Data.maxLevel) return false;
-
-        long cost = Data.CalcUpgradeCost(RuntimeLevel);
-        if (cost > 0)
-        {
-            if (RoseWallet.Instance == null) return false;
-            if (RoseWallet.Instance.CurrentRose < cost) return false;
-            if (!RoseWallet.Instance.SpendRose(cost)) return false;
-        }
-
-        RuntimeLevel++;
-
-        BuildingLevelStore.SetLevel(Data.buildingID, RuntimeLevel);
-
-        GameSaveManager.Instance?.RequestSave();
-        return true;
+        return Building.TryUpgrade();
     }
 
+    public int GetCurrentLevel()
+    {
+        if (Building == null) return 1;
+        return Mathf.Max(1, Building.level);
+    }
 }

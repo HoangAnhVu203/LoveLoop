@@ -4,6 +4,7 @@ using UnityEngine;
 public class BuildingOnRoad : MonoBehaviour
 {
     public BuildingData data;
+    public int roadIndex; 
 
     [Header("Runtime")]
     public int level = 1;
@@ -11,43 +12,27 @@ public class BuildingOnRoad : MonoBehaviour
 
     public bool IsActive { get; private set; }
 
-    public void SetActiveOnRoad(bool active)
+    void Awake()
     {
-        SetActiveOnRoad(active, false);
+        if (data == null) return;
+        level = BuildingLevelStore.GetLevel(GetSaveKey(), 1);
     }
 
-    public void SetActiveOnRoad(bool active, bool resetTimerWhenActivate)
+    string GetSaveKey()
+    {
+        return $"{roadIndex}_{data.buildingID}";
+    }
+
+    public void SetActiveOnRoad(bool active, bool resetTimerWhenActivate = false)
     {
         IsActive = active;
 
-        if (active)
-        {
-            long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        if (!active) return;
 
-            if (resetTimerWhenActivate)
-                lastClaimUnix = now;
+        long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-            if (lastClaimUnix <= 0)
-                lastClaimUnix = now;
-        }
-
-        if (active && data != null)
-        level = BuildingLevelStore.GetLevel(data.buildingID, 1);
-
-    }
-
-    public bool IsMaxLevel => (data != null && level >= data.maxLevel);
-
-    public int GetRewardPerCycle()
-    {
-        if (data == null) return 0;
-        return data.CalcRewardAmount(level);
-    }
-
-    public long GetUpgradeCost()
-    {
-        if (data == null) return 0;
-        return data.CalcUpgradeCost(level);
+        if (resetTimerWhenActivate || lastClaimUnix <= 0)
+            lastClaimUnix = now;
     }
 
     public bool TryUpgrade()
@@ -55,7 +40,7 @@ public class BuildingOnRoad : MonoBehaviour
         if (data == null) return false;
         if (level >= data.maxLevel) return false;
 
-        long cost = GetUpgradeCost();
+        long cost = data.CalcUpgradeCost(level);
         if (cost > 0)
         {
             if (RoseWallet.Instance == null) return false;
@@ -64,6 +49,7 @@ public class BuildingOnRoad : MonoBehaviour
         }
 
         level++;
+        BuildingLevelStore.SetLevel(GetSaveKey(), level);
         GameSaveManager.Instance?.RequestSave();
         return true;
     }

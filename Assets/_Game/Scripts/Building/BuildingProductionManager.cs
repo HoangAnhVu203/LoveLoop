@@ -12,7 +12,6 @@ public class BuildingProductionManager : MonoBehaviour
 
     public void SetActiveBuildings(List<BuildingOnRoad> buildings, bool resetTimerWhenActivate)
     {
-        // tắt list cũ
         for (int i = 0; i < _active.Count; i++)
             if (_active[i] != null) _active[i].SetActiveOnRoad(false);
 
@@ -29,8 +28,6 @@ public class BuildingProductionManager : MonoBehaviour
 
             b.SetActiveOnRoad(true);
 
-            // “chỉ chạy khi đang ở road” + claim bằng nút:
-            // vào road thì set mốc bắt đầu, không trả bù road trước
             if (resetTimerWhenActivate || b.lastClaimUnix <= 0)
                 b.lastClaimUnix = now;
 
@@ -38,7 +35,6 @@ public class BuildingProductionManager : MonoBehaviour
         }
     }
 
-    // UI gọi: bấm nút Collect => nhận tất cả quà đủ chu kỳ
     public bool TryClaimAllOnCurrentRoad(out ClaimResult result)
     {
         result = default;
@@ -79,14 +75,12 @@ public class BuildingProductionManager : MonoBehaviour
                     break;
             }
 
-            // cập nhật mốc claim theo số chu kỳ đã nhận
             b.lastClaimUnix = last + cycles * interval;
             claimedAny = true;
         }
 
         if (!claimedAny) return false;
 
-        // Apply reward 1 lần (gọn)
         if (addMoney > 0) PlayerMoney.Instance?.AddMoney(addMoney);
         if (addRose  > 0) RoseWallet.Instance?.AddRose(addRose);
         if (addHeart > 0) HeartManager.Instance?.AddHeart();
