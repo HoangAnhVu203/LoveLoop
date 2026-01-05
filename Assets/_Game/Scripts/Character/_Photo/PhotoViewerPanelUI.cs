@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using Spine.Unity;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class PhotoViewerPanelUI : UICanvas
 {
     [Header("Main")]
-    [SerializeField] Image mainImage;
+    [SerializeField] Image mainImage;               
+    [SerializeField] SkeletonGraphic mainSpine;    
     [SerializeField] TMP_Text commentText;
 
     [Header("Thumbs")]
@@ -29,8 +31,6 @@ public class PhotoViewerPanelUI : UICanvas
     string currentCharacterId;
     int currentIndex;
 
-    // ===================== PUBLIC =====================
-
     public void Show(CharacterData data)
     {
         if (data == null) return;
@@ -52,24 +52,9 @@ public class PhotoViewerPanelUI : UICanvas
 
     public void Close()
     {
-        //ClearParticles();
+        StopMainSpine();
         gameObject.SetActive(false);
     }
-
-    public void OnDimClick()
-    {
-        Close();
-    }
-
-    //void ClearParticles()
-    //{
-    //    if(particleRoot == null) return;
-
-    //    for(int i = particleRoot.childCount -1; i >= 0; i --)
-    //    {
-    //        Destroy(particleRoot.GetChild(i).gameObject);
-    //    }
-    //}
 
     // ===================== THUMBS =====================
 
@@ -90,22 +75,19 @@ public class PhotoViewerPanelUI : UICanvas
 
             bool unlocked = lv >= entry.requiredLevel;
 
-            Sprite spriteToShow = unlocked ? entry.photo : entry.lockedPhoto;
-
-            if (spriteToShow == null)
-                continue; 
+            // THUMB vẫn là sprite như bạn muốn
+            Sprite thumbSprite = unlocked ? entry.photo : entry.lockedPhoto;
+            if (thumbSprite == null) continue;
 
             var t = Instantiate(thumbPrefab, content, false);
-
             int idx = i;
-            t.Bind(spriteToShow, idx, unlocked, Select);  
+            t.Bind(thumbSprite, idx, unlocked, Select);
             thumbs.Add(t);
         }
 
         Canvas.ForceUpdateCanvases();
         LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)content);
     }
-
 
     void Select(int index)
     {
@@ -118,18 +100,59 @@ public class PhotoViewerPanelUI : UICanvas
         if (entry == null) return;
 
         bool unlocked = lv >= entry.requiredLevel;
-        if (!unlocked)
-        {
-            return;
-        }
+        if (!unlocked) return;
 
         currentIndex = index;
 
-        mainImage.sprite = entry.photo;
         commentText.text = entry.comment;
+
+        // MAIN: ưu tiên spine, nếu spineAsset null thì fallback sprite
+        ShowMain(entry);
 
         bool liked = PhotoLikeStore.IsLiked(currentCharacterId, entry.photoId);
         UpdateLikeUI(liked);
+    }
+
+    // ===================== MAIN SHOW =====================
+
+    void ShowMain(CharacterPhotoEntry entry)
+    {
+        if (entry.spineAsset != null && mainSpine != null)
+        {
+            // bật spine, tắt image
+            if (mainImage != null) mainImage.gameObject.SetActive(false);
+            mainSpine.gameObject.SetActive(true);
+
+            // reset state trước khi đổi
+            mainSpine.AnimationState?.ClearTracks();
+            mainSpine.skeletonDataAsset = entry.spineAsset;
+            mainSpine.Initialize(true);
+
+            string anim = string.IsNullOrEmpty(entry.loopAnimation) ? "animation" : entry.loopAnimation;
+            bool loop = entry.loop;
+
+            mainSpine.AnimationState.SetAnimation(0, anim, loop);
+        }
+        else
+        {
+            // fallback sprite
+            StopMainSpine();
+
+            if (mainImage != null)
+            {
+                mainImage.gameObject.SetActive(true);
+                mainImage.sprite = entry.photo; 
+            }
+        }
+    }
+
+    void StopMainSpine()
+    {
+        if (mainSpine == null) return;
+
+        // tắt spine và clear để dừng CPU
+        mainSpine.AnimationState?.ClearTracks();
+        mainSpine.gameObject.SetActive(false);
     }
 
     // ===================== LIKE =====================
@@ -143,7 +166,6 @@ public class PhotoViewerPanelUI : UICanvas
         if (entry == null) return;
 
         bool liked = PhotoLikeStore.Toggle(currentCharacterId, entry.photoId);
-
         UpdateLikeUI(liked);
 
         if (liked)
@@ -158,7 +180,10 @@ public class PhotoViewerPanelUI : UICanvas
         likeIcon.color = liked ? likedColor : unlikedColor;
     }
 
-    // ===================== PARTICLE =====================
+    public void OnDimClick()
+    {
+        gameObject.SetActive(false);
+    }
 
     void PlayLikeEffect()
     {

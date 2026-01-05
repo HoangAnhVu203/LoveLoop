@@ -45,7 +45,7 @@ public class PlayerMoney : MonoBehaviour
     void UpdateUI()
     {
         if (moneyText != null)
-            moneyText.text = "$ " + MoneyFormatter.Format(currentMoney);
+            moneyText.text = MoneyFormatter.Format(currentMoney);
     }
 
     public void SetMoney(long value)
@@ -59,7 +59,7 @@ public class PlayerMoney : MonoBehaviour
     {
 
         if (moneyText != null)
-            moneyText.text = "$ " + MoneyFormatter.Format(currentMoney);
+            moneyText.text =  MoneyFormatter.Format(currentMoney);
     }
 
 }

@@ -266,13 +266,13 @@ public class PanelGamePlay : UICanvas
         if (addCostText != null)
         {
             long addCost = ActionCostStore.GetAddCost();
-            addCostText.text = costPrefix + MoneyFormatter.Format(addCost);
+            addCostText.text =  MoneyFormatter.Format(addCost);
         }
 
         if (mergeCostText != null)
         {
             long mergeCost = ActionCostStore.GetMergeCost();
-            mergeCostText.text = costPrefix + MoneyFormatter.Format(mergeCost);
+            mergeCostText.text = MoneyFormatter.Format(mergeCost);
         }
     }
 

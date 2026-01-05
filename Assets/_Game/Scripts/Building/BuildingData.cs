@@ -52,7 +52,7 @@ public class BuildingData : ScriptableObject
         switch (rewardType)
         {
             case RewardType.Flower:  return $"+ {amount} rose";
-            case RewardType.Money:   return $"+ $ {amount}";
+            case RewardType.Money:   return $"+ {amount} coin";
             case RewardType.Heart:   return $"+ {amount} heart";
             case RewardType.Boost5s: return $"+ {amount * 5}s boost";
             default:                 return $"+ {amount}";

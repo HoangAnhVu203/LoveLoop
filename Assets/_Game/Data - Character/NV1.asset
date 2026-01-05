@@ -22,35 +22,47 @@ MonoBehaviour:
   photos:
   - photoId: p0
     photo: {fileID: 21300000, guid: a986353830d304d649f5e36604a4320f, type: 3}
+    spineAsset: {fileID: 11400000, guid: a607802c893864ad79466bc4d53969d8, type: 2}
+    loopAnimation: animation
+    loop: 1
     lockedPhoto: {fileID: 21300000, guid: 0e560657425c549b5be0bae1c0dd7266, type: 3}
     comment: 'I don''t have any selifies, but... this picture make me haappy. I hope
       it make you smile too!!! '
     requiredLevel: 4
   - photoId: p1
     photo: {fileID: 21300000, guid: ffaff898da6de44b39a327ea7320c0a1, type: 3}
+    spineAsset: {fileID: 11400000, guid: 9953c929bedd04cf090c322089d6bb5a, type: 2}
+    loopAnimation: animation
+    loop: 1
     lockedPhoto: {fileID: 21300000, guid: c39500bbcdffe43739bef2df6c722b35, type: 3}
     comment: I felt a little shy taking this... but I wanted to share it with you.
     requiredLevel: 6
   - photoId: p2
     photo: {fileID: 21300000, guid: 1a6da0285c9f84007b6badbdf627f14b, type: 3}
+    spineAsset: {fileID: 11400000, guid: 086cb7566833845f694091983b44a884, type: 2}
+    loopAnimation: animation
+    loop: 1
     lockedPhoto: {fileID: 21300000, guid: 26ef2386f4f5c42bdbb634dddb814210, type: 3}
     comment: Let's cook dinner togerther, I'll be your dessert my love.
     requiredLevel: 8
   - photoId: p3
     photo: {fileID: 21300000, guid: 16ffe78da5a3d42d1adae449b4cb888e, type: 3}
+    spineAsset: {fileID: 0}
+    loopAnimation: animation
+    loop: 1
     lockedPhoto: {fileID: 21300000, guid: 2d0925f7f632d4d6799c53bd216f97b5, type: 3}
     comment: "I\u2019m the kind of girl your mother warned you about."
     requiredLevel: 10
   levelIcons:
-  - {fileID: 21300000, guid: febfa2498e634446d8337d9100842c0f, type: 3}
-  - {fileID: 21300000, guid: 9fbfd7263d69549168926655a80cab1e, type: 3}
-  - {fileID: 21300000, guid: ab23cdaeccda04d2db5daa8c412497e4, type: 3}
-  - {fileID: 21300000, guid: c688cbcee85464da69c561889fe55b28, type: 3}
-  - {fileID: 21300000, guid: c7d9edd8ff55c450dacfd4a0cfb738da, type: 3}
-  - {fileID: 21300000, guid: ff2a5b8383ea64101ac534a963bc108f, type: 3}
-  - {fileID: 21300000, guid: 66e87027ee75042c3a76933bc1278536, type: 3}
-  - {fileID: 21300000, guid: 4bbde1ccb8ec64828bc2aea441de26e1, type: 3}
-  - {fileID: 21300000, guid: 1a82c3d757c864cd88d564e2229a55d9, type: 3}
-  - {fileID: 21300000, guid: e8435a13121d6484c97a1d2d45c09347, type: 3}
-  - {fileID: 21300000, guid: 2be926973bb344333b3e732787b9e412, type: 3}
-  - {fileID: 21300000, guid: ee4a205cc35bd4dab985efdf30bfcb98, type: 3}
+  - {fileID: 21300000, guid: 81a6c0c6836164bb491fe9591257f357, type: 3}
+  - {fileID: 21300000, guid: 90986c0499cbd4567aa67b901c7ed85d, type: 3}
+  - {fileID: 21300000, guid: 9a0ae704f8dc249c1bc27d8a030f11d3, type: 3}
+  - {fileID: 21300000, guid: b8da77c7805fa4a9f8f6583a73a65305, type: 3}
+  - {fileID: 21300000, guid: 03aa462c46f304f68b96cdae72480946, type: 3}
+  - {fileID: 21300000, guid: 583e5a3c5d67a49149199f7d3d0b0d01, type: 3}
+  - {fileID: 21300000, guid: f3bd2f905942744b7b9db1c91ff0d868, type: 3}
+  - {fileID: 21300000, guid: 9fb589a49799941abb1544eed12e153b, type: 3}
+  - {fileID: 21300000, guid: 1de174624157041ebb5753d0b8e20f62, type: 3}
+  - {fileID: 21300000, guid: 7be2bc681cb684b8793c738cef9f7183, type: 3}
+  - {fileID: 21300000, guid: 93fbdd1812cb043d2a6018924888d3ad, type: 3}
+  - {fileID: 21300000, guid: 8f7453e9635e74440b17b6f3d0e8ec00, type: 3}
